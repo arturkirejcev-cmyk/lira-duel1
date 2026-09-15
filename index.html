@@ -124,7 +124,7 @@ button:disabled{opacity:.4}
             <b id="username">Завантаження…</b>
             <div class="muted">XP: <span id="xp">—</span> · Рівень: <span id="level">—</span></div>
         </div>
-        <div class="badge">💰 <span id="balance">0.00</span> ₴</div>
+        <div class="badge">💰 <span id="balance">0.00</span> LIR</div>
     </div>
 </div>
 
@@ -195,11 +195,12 @@ button:disabled{opacity:.4}
 
 <script>
 /*
-  ВАЖЛИВО:
-  index.html і API мають працювати з одного HTTPS-домену на VPS.
-  Тоді API_BASE визначається автоматично як поточний origin.
+  API працює на VPS, а цей index.html — на GitHub Pages.
+  API_BASE можна передати через ?api=...; за замовчуванням використовується
+  публічна HTTPS-адреса API Ліри.
 */
-const API_BASE = window.location.origin;
+const DEFAULT_API_BASE = "https://91-208-184-101.sslip.io";
+const API_BASE = (new URLSearchParams(window.location.search).get("api") || DEFAULT_API_BASE).replace(/\/$/, "");
 
 const tg = window.Telegram?.WebApp;
 let selectedCardId = null;
@@ -377,7 +378,7 @@ async function loadHistory() {
                 ${win ? "🏆 Перемога" : "💀 Поразка"}
                 · ${item.opponent_type === "bot" ? "🤖 NPC" : "👤 Гравець"}
                 · +${item.xp} XP
-                ${item.reward ? "· +" + Number(item.reward).toFixed(2) + " ₴" : ""}
+                ${item.reward ? "· +" + Number(item.reward).toFixed(2) + " LIR" : ""}
             </div>
         `;
     }).join("");
@@ -507,7 +508,7 @@ function renderMatch(m) {
                 "🏆 ПЕРЕМОГА! +" +
                 (r.xp || 0) +
                 " XP" +
-                (r.reward ? " · +" + r.reward + " ₴" : "");
+                (r.reward ? " · +" + Number(r.reward).toFixed(2) + " LIR" : "");
         } else {
             result.textContent =
                 "💀 ПОРАЗКА · картка на 24 год.";
@@ -650,7 +651,7 @@ async function boot() {
         await refreshAll();
 
     } catch(e) {
-        setStatus("❌ " + e.message);
+        setStatus("❌ " + e.message + " | API: " + API_BASE);
     }
 }
 
