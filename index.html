@@ -312,6 +312,7 @@ function renderCards() {
                 <div class="stat">⚡<b>${card.speed}</b>ШВ</div>
                 <div class="stat">💥<b>${card.crit_chance}%</b>КРИТ</div>
                 <div class="stat">×<b>${card.crit_multiplier}</b>КРИТ</div>
+                <div class="stat">💥<b>${card.damage_type === "magical" ? "Маг" : "Фіз"}</b></div>
             </div>
 
             ${cooldown ? `<div class="cooldown">${cooldown}</div>` : ""}
@@ -545,7 +546,7 @@ function renderLog(log) {
 
         return `
             <div class="logitem">
-                ${who} → <b>${x.damage}</b> шкоди${crit}${ability}
+                ${who} → <b>${x.damage}</b> ${x.damage_type === "magical" ? "магічної" : "фізичної"} шкоди${crit}${ability}
             </div>
         `;
     }).join("");
