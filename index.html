@@ -104,6 +104,62 @@ button:disabled{opacity:.4}
 .empty{text-align:center;opacity:.55;padding:18px}
 #status{text-align:center;min-height:20px;font-size:12px;opacity:.7;margin:7px 0}
 .hidden{display:none!important}
+
+/* ===== INVENTORY / CHESTS / UPGRADE UI ===== */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.tab-btn{margin:0;padding:11px 8px;border-radius:14px;font-size:13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}
+.tab-btn.active,.speed-btn.active{background:linear-gradient(135deg,#8b43ff,#c35cff);box-shadow:0 7px 22px rgba(139,67,255,.22)}
+.page{display:none}.page.active{display:block}
+.chests{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.chest-card{position:relative;text-align:center;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:11px 7px;cursor:pointer;overflow:hidden}
+.chest-card:active{transform:scale(.97)}
+.chest-visual{height:82px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}
+.chest-box{position:relative;width:68px;height:55px;border-radius:8px 8px 11px 11px;border:3px solid #4a2816;box-shadow:inset 0 8px 0 rgba(255,255,255,.08),0 5px 0 rgba(0,0,0,.25)}
+.chest-box:before{content:"";position:absolute;left:3px;right:3px;top:-18px;height:27px;border:3px solid #4a2816;border-bottom:0;border-radius:35px 35px 5px 5px;background:inherit;transform-origin:bottom center}
+.chest-box:after{content:"";position:absolute;left:50%;top:21px;width:10px;height:14px;transform:translateX(-50%);border-radius:3px;background:#f0c65b;box-shadow:0 0 10px rgba(255,210,90,.55)}
+.chest-wood .chest-box{background:linear-gradient(145deg,#9a5b2e,#633718)}
+.chest-iron .chest-box{background:linear-gradient(145deg,#7b8796,#39424f);border-color:#202832}
+.chest-iron .chest-box:before{border-color:#202832}
+.chest-gold .chest-box{background:linear-gradient(145deg,#ffe27a,#bd7d17);border-color:#70470b;box-shadow:inset 0 8px 0 rgba(255,255,255,.2),0 0 18px rgba(255,195,55,.25)}
+.chest-gold .chest-box:before{border-color:#70470b}
+.chest-name{font-weight:900;font-size:13px}
+.chest-count{font-size:11px;opacity:.7;margin-top:3px}
+.chest-hint{font-size:10px;opacity:.55;margin-top:5px}
+.upgrades{display:grid;gap:8px;margin-top:10px}
+.upgrade-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:15px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08);cursor:pointer}
+.upgrade-card.selected{border-color:#ff9d3d;box-shadow:0 0 0 2px rgba(255,157,61,.14),0 0 20px rgba(255,157,61,.08)}
+.upgrade-art{width:54px;height:54px;flex:0 0 54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;background:radial-gradient(circle,#4d2b75,#1a1029 70%);border:1px solid rgba(255,255,255,.1)}
+.upgrade-title{font-weight:900}.upgrade-sub{font-size:11px;opacity:.65;margin-top:3px}
+.level-list{display:grid;gap:8px}
+.level-reward{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:11px;border-radius:15px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07)}
+.level-reward small{display:block;opacity:.55;margin-top:2px}
+.level-progress{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0 12px}
+.level-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8b43ff,#ff73ce);transition:width .5s}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;z-index:1000}
+.modal-card{width:min(430px,100%);background:linear-gradient(180deg,#1b1428,#0c0b12);border:1px solid rgba(255,255,255,.12);border-radius:26px;padding:18px;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.6)}
+.modal-title{font-size:21px;font-weight:1000}.modal-text{font-size:13px;opacity:.72;line-height:1.45;margin:8px 0 14px}
+.reward-art{width:150px;height:130px;margin:8px auto 14px;display:flex;align-items:center;justify-content:center}
+.reward-art .chest-box{transform:scale(1.45)}
+.reward-icon{font-size:72px;filter:drop-shadow(0 8px 16px rgba(189,115,255,.3))}
+.reward-card-img{width:150px;height:150px;object-fit:cover;border-radius:22px;border:2px solid rgba(255,255,255,.13);box-shadow:0 15px 40px rgba(0,0,0,.4)}
+.modal-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.modal-buttons button{margin:0}
+.opening .chest-box:before{animation:chestOpen 1s cubic-bezier(.2,.8,.2,1) forwards}
+.opening .chest-box{animation:chestShake .12s ease-in-out 7 alternate}
+@keyframes chestOpen{0%{transform:rotate(0)}35%{transform:rotate(-8deg)}100%{transform:rotate(-42deg) translate(-4px,-4px)}}
+@keyframes chestShake{from{transform:translateX(-3px) rotate(-1deg)}to{transform:translateX(3px) rotate(1deg)}}
+.reward-glow{animation:rewardPop .55s ease-out}
+@keyframes rewardPop{0%{transform:scale(.45);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.attack-line{position:fixed;pointer-events:none;height:4px;width:150px;background:linear-gradient(90deg,transparent,#fff,#ff3b3b,transparent);box-shadow:0 0 15px #ff3434,0 0 35px rgba(255,50,50,.7);z-index:999;transform-origin:left center;opacity:0}
+.attack-line.show{animation:slash .35s ease-out}
+@keyframes slash{0%{opacity:0;transform:rotate(var(--a)) scaleX(.15)}20%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(90px) scaleX(1)}}
+@media(max-width:420px){.chests{grid-template-columns:1fr 1fr}.tabs{gap:5px}.tab-btn{font-size:12px}}
+
+
+/* ===== LIRA CHEST ARTWORK ===== */
+.lira-chest-art{width:92px;height:76px;object-fit:contain;display:block;filter:drop-shadow(0 8px 12px rgba(0,0,0,.42));transition:transform .25s ease,filter .25s ease}
+.chest-card:hover .lira-chest-art{transform:translateY(-2px) scale(1.04)}
+.chest-visual.opening .lira-chest-art{animation:liraChestOpenPulse 1.1s ease-in-out both}
+@keyframes liraChestOpenPulse{0%{transform:scale(.9) rotate(0)}35%{transform:scale(1.06) rotate(-3deg);filter:drop-shadow(0 0 18px rgba(255,190,70,.8))}70%{transform:scale(1.12) rotate(3deg);filter:drop-shadow(0 0 28px rgba(255,190,70,.95))}100%{transform:scale(1.03) rotate(0)}}
 </style>
 </head>
 
@@ -128,7 +184,16 @@ button:disabled{opacity:.4}
     </div>
 </div>
 
-<div id="lobby">
+
+<div class="tabs">
+    <button class="tab-btn active" data-page="duel" onclick="showPage('duel')">⚔️ Дуель</button>
+    <button class="tab-btn" data-page="inventory" onclick="showPage('inventory')">🎒 Інвентар</button>
+    <button class="tab-btn" data-page="levels" onclick="showPage('levels')">🏆 Рівні</button>
+</div>
+
+<div id="duelPage" class="page active">
+
+    <div id="lobby">
 
     <div class="panel">
         <div class="section-title">🎴 Обери картку</div>
@@ -150,6 +215,36 @@ button:disabled{opacity:.4}
         <div id="history" class="empty">Завантаження…</div>
     </div>
 
+    </div>
+</div>
+
+<div id="inventoryPage" class="page">
+    <div class="panel">
+        <div class="section-title">🎒 Інвентар</div>
+        <div class="muted">Тут зберігаються твої скрині та отримані покращення.</div>
+    </div>
+    <div class="panel">
+        <div class="section-title">🎁 Скрині</div>
+        <div id="chests" class="chests"></div>
+    </div>
+    <div class="panel">
+        <div class="section-title">🛠️ Покращення</div>
+        <div id="upgradeHint" class="muted">Натисни на покращення, щоб подивитися інформацію.</div>
+        <div id="upgrades" class="upgrades"></div>
+    </div>
+    <div class="panel">
+        <div class="section-title">🎴 Картки для застосування</div>
+        <div id="invCards" class="cards"></div>
+    </div>
+</div>
+
+<div id="levelsPage" class="page">
+    <div class="panel">
+        <div class="section-title">🏆 Рівень <span id="levelBig">—</span></div>
+        <div class="muted"><span id="levelXpNow">0</span> / <span id="levelXpNext">0</span> XP</div>
+        <div class="level-progress"><i id="levelProgress"></i></div>
+        <div id="levelRewards" class="level-list"></div>
+    </div>
 </div>
 
 <div id="battle" class="hidden">
@@ -187,6 +282,41 @@ button:disabled{opacity:.4}
         <button class="secondary" onclick="backLobby()">◀️ До колекції</button>
     </div>
 
+</div>
+
+
+<div id="attackFx" class="attack-line"></div>
+
+<div id="chestModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+        <div class="modal-title" id="chestModalTitle">🎁 Скриня</div>
+        <div id="chestOpeningVisual" class="reward-art"></div>
+        <div class="modal-text" id="chestModalText">Підготовка...</div>
+        <button id="chestOpenButton" onclick="confirmOpenChest()">🔓 Відкрити скриню</button>
+        <button class="secondary" onclick="closeModal('chestModal')">Закрити</button>
+    </div>
+</div>
+
+<div id="rewardModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+        <div class="modal-title">🎉 Ти отримав!</div>
+        <div id="rewardVisual" class="reward-art reward-glow"></div>
+        <div id="rewardTitle" class="modal-title"></div>
+        <div id="rewardText" class="modal-text"></div>
+        <button onclick="closeModal('rewardModal')">🔥 Забрати нагороду</button>
+    </div>
+</div>
+
+<div id="upgradeModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+        <div class="modal-title" id="upgradeModalTitle">🛠️ Покращення</div>
+        <div id="upgradeVisual" class="reward-art"><div class="reward-icon">✨</div></div>
+        <div id="upgradeModalText" class="modal-text"></div>
+        <div class="modal-buttons">
+            <button onclick="selectUpgradeFromModal()">🎯 Обрати</button>
+            <button class="secondary" onclick="closeModal('upgradeModal')">Закрити</button>
+        </div>
+    </div>
 </div>
 
 <div id="status"></div>
@@ -254,6 +384,9 @@ function imageUrl(cardId) {
     return API_BASE + "/api/card/" + encodeURIComponent(cardId) + "/image";
 }
 
+/* CHEST ARTWORK FROM CHEST/UPGRADES VERSION */
+const LIRA_CHEST_IMAGES={wood:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNDAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjYTk1ZjJjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTQyNzEzIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnbCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMTAiLz48L2ZpbHRlcj48L2RlZnM+PGVsbGlwc2UgY3g9IjI1NiIgY3k9IjM1MCIgcng9IjE4NSIgcnk9IjI1IiBmaWxsPSIjZmY5YjM1IiBvcGFjaXR5PSIuMjUiIGZpbHRlcj0idXJsKCNnbCkiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCBMNDM0IDI0NSBRMjU2IDMzMiA3OCAyNDVaIiBmaWxsPSJ1cmwoI2IpIiBzdHJva2U9IiNkODliNTgiIHN0cm9rZS13aWR0aD0iMTIiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDg5YjU4IiBzdHJva2Utd2lkdGg9IjE4Ii8+PHJlY3QgeD0iNzAiIHk9IjE5OCIgd2lkdGg9IjM3MiIgaGVpZ2h0PSIxMTUiIHJ4PSIyMiIgZmlsbD0idXJsKCNiKSIgc3Ryb2tlPSIjZDg5YjU4IiBzdHJva2Utd2lkdGg9IjEyIi8+PHBhdGggZD0iTTExOCAyMDJWMzAyIE0zOTQgMjAyVjMwMiIgc3Ryb2tlPSIjZDg5YjU4IiBzdHJva2Utd2lkdGg9IjE0Ii8+PHJlY3QgeD0iMjM1IiB5PSIyMTUiIHdpZHRoPSI0MiIgaGVpZ2h0PSI2MiIgcng9IjgiIGZpbGw9IiNkODliNTgiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNDIiIHI9IjgiIGZpbGw9IiM1NDI3MTMiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNkODliNTgiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNkODliNTgiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNkODliNTgiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNkODliNTgiLz48L3N2Zz4=",iron:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNDAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjODc5N2FhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjUyZjNiIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnbCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMTAiLz48L2ZpbHRlcj48L2RlZnM+PGVsbGlwc2UgY3g9IjI1NiIgY3k9IjM1MCIgcng9IjE4NSIgcnk9IjI1IiBmaWxsPSIjNTVjOGZmIiBvcGFjaXR5PSIuMjUiIGZpbHRlcj0idXJsKCNnbCkiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCBMNDM0IDI0NSBRMjU2IDMzMiA3OCAyNDVaIiBmaWxsPSJ1cmwoI2IpIiBzdHJva2U9IiNkM2RmZWMiIHN0cm9rZS13aWR0aD0iMTIiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDNkZmVjIiBzdHJva2Utd2lkdGg9IjE4Ii8+PHJlY3QgeD0iNzAiIHk9IjE5OCIgd2lkdGg9IjM3MiIgaGVpZ2h0PSIxMTUiIHJ4PSIyMiIgZmlsbD0idXJsKCNiKSIgc3Ryb2tlPSIjZDNkZmVjIiBzdHJva2Utd2lkdGg9IjEyIi8+PHBhdGggZD0iTTExOCAyMDJWMzAyIE0zOTQgMjAyVjMwMiIgc3Ryb2tlPSIjZDNkZmVjIiBzdHJva2Utd2lkdGg9IjE0Ii8+PHJlY3QgeD0iMjM1IiB5PSIyMTUiIHdpZHRoPSI0MiIgaGVpZ2h0PSI2MiIgcng9IjgiIGZpbGw9IiNkM2RmZWMiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNDIiIHI9IjgiIGZpbGw9IiMyNTJmM2IiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNkM2RmZWMiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNkM2RmZWMiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNkM2RmZWMiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNkM2RmZWMiLz48L3N2Zz4=",gold:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNDAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjZmZlMjdhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOWE1YjBhIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnbCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMTAiLz48L2ZpbHRlcj48L2RlZnM+PGVsbGlwc2UgY3g9IjI1NiIgY3k9IjM1MCIgcng9IjE4NSIgcnk9IjI1IiBmaWxsPSIjZmZjNTJmIiBvcGFjaXR5PSIuMjUiIGZpbHRlcj0idXJsKCNnbCkiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCBMNDM0IDI0NSBRMjU2IDMzMiA3OCAyNDVaIiBmaWxsPSJ1cmwoI2IpIiBzdHJva2U9IiNmZmYxYTgiIHN0cm9rZS13aWR0aD0iMTIiLz48cGF0aCBkPSJNNzggMTU4IFEyNTYgNDUgNDM0IDE1OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmMWE4IiBzdHJva2Utd2lkdGg9IjE4Ii8+PHJlY3QgeD0iNzAiIHk9IjE5OCIgd2lkdGg9IjM3MiIgaGVpZ2h0PSIxMTUiIHJ4PSIyMiIgZmlsbD0idXJsKCNiKSIgc3Ryb2tlPSIjZmZmMWE4IiBzdHJva2Utd2lkdGg9IjEyIi8+PHBhdGggZD0iTTExOCAyMDJWMzAyIE0zOTQgMjAyVjMwMiIgc3Ryb2tlPSIjZmZmMWE4IiBzdHJva2Utd2lkdGg9IjE0Ii8+PHJlY3QgeD0iMjM1IiB5PSIyMTUiIHdpZHRoPSI0MiIgaGVpZ2h0PSI2MiIgcng9IjgiIGZpbGw9IiNmZmYxYTgiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNDIiIHI9IjgiIGZpbGw9IiM5YTViMGEiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNmZmYxYTgiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIxODAiIHI9IjgiIGZpbGw9IiNmZmYxYTgiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNmZmYxYTgiLz48Y2lyY2xlIGN4PSIzODciIGN5PSIzMjAiIHI9IjgiIGZpbGw9IiNmZmYxYTgiLz48L3N2Zz4="};
+
 async function loadMe() {
     const data = await api("/api/me");
 
@@ -268,6 +401,10 @@ async function loadMe() {
 
     document.getElementById("energy").textContent =
         data.energy.current;
+    if(inventoryData?.level){
+        const el=document.getElementById("levelBig");
+        if(el)el.textContent=u.level;
+    }
 }
 
 function formatCooldown(value) {
@@ -385,12 +522,269 @@ async function loadHistory() {
     }).join("");
 }
 
+
+const chestInfo = {
+    wood: {name:"Дерев’яна скриня", icon:"🪵", cls:"chest-wood", text:"Проста скриня. Може дати LIR, XP або покращення захисту.", reward:"Випадкова нагорода: LIR, XP або Захист +2."},
+    iron: {name:"Залізна скриня", icon:"🔩", cls:"chest-iron", text:"Міцна скриня з кращими нагородами.", reward:"Випадкова нагорода: XP, HP +5 або Сила +3."},
+    gold: {name:"Золота скриня", icon:"🥇", cls:"chest-gold", text:"Рідкісна скриня з гарантованим універсальним покращенням.", reward:"Гарантовано Універсальне +5. Є 10% шанс отримати картку."}
+};
+let inventoryData = null;
+let selectedChestType = null;
+let selectedUpgrade = null;
+let selectedUpgradeData = null;
+let autoTimer = null;
+let speed = 1;
+let queueTimer = null;
+let auto = false;
+
+function showPage(pageName){
+    document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+    const page=document.getElementById(pageName+"Page");
+    if(page) page.classList.add("active");
+    document.querySelectorAll(".tab-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===pageName));
+    if(pageName==="inventory") loadInventory();
+    if(pageName==="levels"){loadInventory();renderLevels();}
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function chestVisual(type, opening=false){
+    const c=chestInfo[type]||chestInfo.wood;
+    const img=(typeof LIRA_CHEST_IMAGES !== "undefined" && LIRA_CHEST_IMAGES[type]) ? LIRA_CHEST_IMAGES[type] : "";
+    return `<div class="chest-visual ${c.cls} ${opening?'opening':''}">
+        ${img ? `<img class="lira-chest-art" src="${img}" alt="${c.name}">` : `<div class="chest-box"></div>`}
+    </div>`;
+}
+
+function closeModal(id){
+    const el=document.getElementById(id);
+    if(el) el.classList.add("hidden");
+}
+
+function openChestModal(type){
+    const c=chestInfo[type];
+    if(!c) return;
+    selectedChestType=type;
+    document.getElementById("chestModalTitle").textContent=c.icon+" "+c.name;
+    document.getElementById("chestOpeningVisual").innerHTML=chestVisual(type);
+    document.getElementById("chestModalText").textContent=c.text+" "+c.reward;
+    document.getElementById("chestOpenButton").disabled=false;
+    document.getElementById("chestModal").classList.remove("hidden");
+}
+
+async function confirmOpenChest(){
+    if(!selectedChestType) return;
+    const type=selectedChestType;
+    const btn=document.getElementById("chestOpenButton");
+    btn.disabled=true;
+    const visual=document.getElementById("chestOpeningVisual");
+    visual.innerHTML=chestVisual(type,true);
+    document.getElementById("chestModalText").textContent="✨ Скриня відкривається...";
+    await new Promise(r=>setTimeout(r,1100));
+    try{
+        const d=await api("/api/inventory/chest/open",{
+            method:"POST",
+            body:JSON.stringify({chest_type:type})
+        });
+        closeModal("chestModal");
+        await loadMe();
+        await loadCards();
+        await loadInventory(d);
+        showReward(d.rewards||[],type);
+    }catch(e){
+        btn.disabled=false;
+        document.getElementById("chestModalText").textContent="❌ "+e.message;
+    }
+}
+
+function showReward(rewards,type){
+    const r=(rewards||[])[0]||{};
+    const visual=document.getElementById("rewardVisual");
+    let title="🎁 Нагорода";
+    let text=r.text||"Нагороду отримано.";
+    if(r.type==="upgrade"){
+        const map={defense:["🛡️","Покращення захисту","Збільшує захист картки на +"+r.value+"."],hp:["❤️","Покращення HP","Збільшує максимальне HP картки на +"+r.value+"."],power:["⚔️","Покращення сили","Збільшує силу картки на +"+r.value+"."],all:["✨","Універсальне покращення","Одразу підсилює всі основні характеристики картки."]};
+        const x=map[r.upgrade_type]||["✨","Покращення","Покращення для картки."];
+        visual.innerHTML=`<div class="reward-icon">${x[0]}</div>`;
+        title=x[1];
+        text=x[2]+" Воно вже знаходиться в інвентарі та його можна застосувати до картки.";
+    }else if(r.type==="card" && r.card_id){
+        visual.innerHTML=`<img class="reward-card-img" src="${imageUrl(r.card_id)}">`;
+        title="🎴 Нова картка";
+        text=text+" Картку додано до твоєї колекції.";
+    }else{
+        visual.innerHTML=`<div class="reward-icon">${r.type==="xp"?"⭐":r.type==="lir"?"💰":"🎁"}</div>`;
+    }
+    document.getElementById("rewardTitle").textContent=title;
+    document.getElementById("rewardText").textContent=text;
+    document.getElementById("rewardModal").classList.remove("hidden");
+}
+
+async function loadInventory(passed){
+    try{
+        const d=passed||await api("/api/inventory");
+        inventoryData=d;
+        const ch=document.getElementById("chests");
+        if(ch){
+            ch.innerHTML=(d.chests||[]).filter(x=>Number(x.quantity)>0).map(x=>{
+                const c=chestInfo[x.chest_type]||chestInfo.wood;
+                return `<div class="chest-card" onclick="openChestModal('${x.chest_type}')">
+                    ${chestVisual(x.chest_type)}
+                    <div class="chest-name">${c.icon} ${c.name}</div>
+                    <div class="chest-count">Кількість: ${x.quantity}</div>
+                    <div class="chest-hint">Натисни, щоб відкрити</div>
+                </div>`;
+            }).join("")||'<div class="empty" style="grid-column:1/-1">Скринь поки немає.</div>';
+        }
+        const up=document.getElementById("upgrades");
+        if(up){
+            up.innerHTML=(d.upgrades||[]).map(u=>{
+                const info=upgradeInfo(u.upgrade_type,u.value);
+                return `<div class="upgrade-card ${selectedUpgrade===u.id?'selected':''}" onclick='openUpgradeInfo(${JSON.stringify(u)})'>
+                    <div class="upgrade-art">${info.icon}</div>
+                    <div><div class="upgrade-title">${info.title} +${u.value}</div><div class="upgrade-sub">${info.short}</div></div>
+                </div>`;
+            }).join("")||'<div class="empty">Покращень поки немає.</div>';
+        }
+        const ic=document.getElementById("invCards");
+        if(ic){
+            ic.innerHTML=(d.cards||[]).map(c=>`<div class="card ${selectedUpgrade?'selected':''}" onclick="applyUpgrade(${c.id})">
+                <img src="${imageUrl(c.id)}" onerror="this.style.display='none'">
+                <div class="cardname">${escapeHtml(c.name)}</div>
+                <div class="rarity">❤️${c.hp} ⚔️${c.power} 🛡${c.defense}</div>
+                ${selectedUpgrade?'<div style="color:#ff9d3d;font-size:11px">Натисни, щоб застосувати</div>':''}
+            </div>`).join("")||'<div class="empty" style="grid-column:1/-1">Карток немає.</div>';
+        }
+        renderLevels();
+    }catch(e){
+        const ch=document.getElementById("chests");
+        if(ch) ch.innerHTML='<div class="empty">❌ '+escapeHtml(e.message)+'</div>';
+    }
+}
+
+function upgradeInfo(type,value){
+    const map={
+        power:{icon:"⚔️",title:"Покращення сили",short:"Збільшує силу атаки картки.",long:"Збільшує параметр СИЛ. Це підсилює фізичну шкоду картки."},
+        defense:{icon:"🛡️",title:"Покращення захисту",short:"Збільшує захист картки.",long:"Збільшує параметр ЗАХ. Фізичні атаки суперника завдають менше шкоди."},
+        hp:{icon:"❤️",title:"Покращення HP",short:"Збільшує максимальне здоров’я.",long:"Збільшує максимальний запас HP картки та допомагає довше залишатися в бою."},
+        all:{icon:"✨",title:"Універсальне покращення",short:"Підсилює всі основні характеристики.",long:"Одне універсальне покращення додає бонус до сили, захисту, HP, магічного захисту, швидкості та критичного шансу."}
+    };
+    return map[type]||{icon:"🛠️",title:"Покращення",short:"Підсилення картки.",long:"Це покращення можна застосувати до твоєї картки."};
+}
+
+function openUpgradeInfo(u){
+    selectedUpgradeData=u;
+    const i=upgradeInfo(u.upgrade_type,u.value);
+    document.getElementById("upgradeModalTitle").textContent=i.icon+" "+i.title+" +"+u.value;
+    document.getElementById("upgradeVisual").innerHTML=`<div class="reward-icon">${i.icon}</div>`;
+    document.getElementById("upgradeModalText").textContent=i.long+" Після застосування предмет з інвентарю витрачається, а бонус назавжди записується саме на обрану картку.";
+    document.getElementById("upgradeModal").classList.remove("hidden");
+}
+
+function selectUpgradeFromModal(){
+    if(!selectedUpgradeData) return;
+    selectedUpgrade=selectedUpgradeData.id;
+    closeModal("upgradeModal");
+    const hint=document.getElementById("upgradeHint");
+    if(hint) hint.textContent="🎯 Обрано: "+upgradeInfo(selectedUpgradeData.upgrade_type,selectedUpgradeData.value).title+" +"+selectedUpgradeData.value+". Тепер натисни на картку нижче.";
+    loadInventory();
+}
+
+async function applyUpgrade(cardId){
+    if(!selectedUpgrade){setStatus("Спочатку відкрий інформацію про покращення та натисни «Обрати».");return}
+    try{
+        const d=await api("/api/inventory/upgrade/apply",{
+            method:"POST",
+            body:JSON.stringify({upgrade_id:selectedUpgrade,card_id:cardId})
+        });
+        selectedUpgrade=null;
+        selectedUpgradeData=null;
+        await loadMe();
+        await loadCards();
+        await loadInventory(d);
+        setStatus("✅ Покращення застосовано до картки.");
+    }catch(e){setStatus("❌ "+e.message)}
+}
+
+function renderLevels(){
+    const d=window.inventoryData||inventoryData;
+    if(!d||!d.level)return;
+    const l=d.level;
+    const cur=Number(l.current_xp||0);
+    const next=Number(l.next_xp||cur+1);
+    const prog=Number(l.progress_xp||0);
+    const span=Math.max(1,Number(l.required_xp||next-cur));
+    const pct=Math.max(0,Math.min(100,prog/span*100));
+    const el=id=>document.getElementById(id);
+    if(el("levelBig")) el("levelBig").textContent=l.level;
+    if(el("levelXpNow")) el("levelXpNow").textContent=l.xp;
+    if(el("levelXpNext")) el("levelXpNext").textContent=next;
+    if(el("levelProgress")) el("levelProgress").style.width=pct+"%";
+    const box=el("levelRewards");
+    if(!box)return;
+    const rewards={
+        1:"🎁 Стартова нагорода",
+        2:"🪵 Дерев’яна скриня",
+        3:"⭐ +5 XP",
+        4:"🔩 Залізна скриня",
+        5:"💰 +0.10 LIR",
+        6:"🪵 Дерев’яна скриня",
+        7:"✨ Універсальне покращення +5"
+    };
+    box.innerHTML=Object.keys(rewards).map(k=>{
+        const n=Number(k), claimed=((d.claimed_levels||[]).includes(n));
+        return `<div class="level-reward"><div><b>Рівень ${n}</b><small>${rewards[k]}</small></div>
+            <button style="width:auto;padding:8px 11px;margin:0" onclick="claimLevel(${n})" ${l.level<n||claimed?'disabled':''}>${claimed?'Отримано':'Отримати'}</button>
+        </div>`;
+    }).join("");
+}
+
+async function claimLevel(level){
+    try{
+        const d=await api("/api/inventory/claim-level",{method:"POST",body:JSON.stringify({level})});
+        inventoryData=d;
+        await loadMe();
+        await loadInventory(d);
+        setStatus(d.message||"🎁 Нагороду отримано.");
+    }catch(e){setStatus("❌ "+e.message)}
+}
+
+function setSpeed(n){
+    speed=n;
+    document.querySelectorAll("[data-speed]").forEach(b=>b.classList.toggle("active",+b.dataset.speed===n));
+}
+
+function toggleAuto(){
+    auto=!auto;
+    const b=document.getElementById("autoBtn");
+    if(b)b.textContent="🤖 Автобій: "+(auto?"УВІМК":"ВИМК");
+    if(auto)autoLoop();else clearTimeout(autoTimer);
+}
+
+async function autoLoop(){
+    if(!auto||!currentMatch||currentMatch.finished)return;
+    if(currentMatch.turn==="player")await attack();
+    autoTimer=setTimeout(autoLoop,Math.max(250,1000/speed));
+}
+
+function playAttackFx(){
+    const fx=document.getElementById("attackFx");
+    if(!fx)return;
+    fx.classList.remove("show");
+    void fx.offsetWidth;
+    fx.style.left=(Math.random()*25+37)+"%";
+    fx.style.top=(Math.random()*25+35)+"%";
+    fx.style.setProperty("--a",(Math.random()*35-17)+"deg");
+    fx.classList.add("show");
+}
+
+
 async function refreshAll() {
     try {
         setStatus("Оновлення…");
         await loadMe();
         await loadCards();
         await loadHistory();
+        await loadInventory();
         setStatus("");
     } catch(e) {
         setStatus("❌ " + e.message);
@@ -414,7 +808,7 @@ async function startBattle() {
         });
 
         // Даємо PvP невелике вікно пошуку. Якщо нікого немає — NPC.
-        const deadline = Date.now() + 12000;
+        const deadline = Date.now() + 120000;
         while (Date.now() < deadline) {
             const q = await api("/api/match/queue/status");
 
@@ -558,6 +952,7 @@ async function attack() {
     if (!currentMatch) return;
 
     document.getElementById("attackBtn").disabled = true;
+    playAttackFx();
 
     try {
         const data = await api(
