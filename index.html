@@ -220,6 +220,7 @@ button:disabled{opacity:.4}
             Спочатку шукаємо іншого гравця. Якщо суперника немає — автоматично буде обрано NPC-картку з уже випущених карток.
         </div>
         <button id="startBtn" onclick="startBattle()" disabled>⚔️ Знайти суперника</button>
+        <button class="secondary" onclick="cancelActiveMatch()">❌ Скасувати активну дуель</button>
         <button class="secondary" onclick="refreshAll()">↻ Оновити</button>
     </div>
 
@@ -396,26 +397,42 @@ function headers() {
 }
 
 async function api(path, options={}) {
-    const response = await fetch(API_BASE + path, {
-        ...options,
-        headers: {
-            ...headers(),
-            ...(options.headers || {})
-        }
-    });
-
-    let data;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), Number(options.timeout || 15000));
+    const requestOptions = {...options};
+    delete requestOptions.timeout;
+    requestOptions.signal = controller.signal;
     try {
-        data = await response.json();
-    } catch(e) {
-        throw new Error("API повернув некоректну відповідь");
-    }
+        const response = await fetch(API_BASE + path, {
+            ...requestOptions,
+            headers: {
+                ...headers(),
+                ...(options.headers || {})
+            }
+        });
 
-    if (!response.ok || data.ok === false) {
-        throw new Error(data.error || ("HTTP " + response.status));
-    }
+        let data;
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const raw = await response.text();
+            throw new Error(`API повернув не JSON (HTTP ${response.status})${raw ? ": " + raw.slice(0,120) : ""}`);
+        }
 
-    return data;
+        if (!response.ok || data.ok === false) {
+            throw new Error(data.error || ("HTTP " + response.status));
+        }
+        return data;
+    } catch (e) {
+        if (e.name === "AbortError") throw new Error("API не відповів протягом 15 секунд");
+        if (e instanceof TypeError) {
+            throw new Error("Не вдалося підключитися до API Ліри. Перевірте HTTPS/API на VPS.");
+        }
+        throw e;
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 function imageUrl(cardId) {
@@ -762,18 +779,59 @@ function playAttackFx(){
 
 
 async function loadProfile(){
+ try {
  const d=await api('/api/profile'); profileData=d; const p=d.profile||{};
  const name=[p.first_name,p.last_name].filter(Boolean).join(' ') || p.username || 'Гравець';
  document.getElementById('profileName').textContent=name; document.getElementById('profileId').textContent='ID: '+(p.id||'—'); document.getElementById('profileBalance').textContent=Number(p.balance||0).toFixed(2);
  document.getElementById('profileStats').innerHTML=[['🎮','Ігор',p.games],['🏆','Перемог',p.wins],['💀','Поразок',p.losses],['🔥','Серія',p.streak],['⚡','Найкраща серія',p.best_streak],['🎴','Різних карток',p.unique_cards]].map(x=>`<div class="statbox"><span>${x[0]} ${x[1]}</span><b>${x[2]||0}</b></div>`).join('');
  const sh=d.shards||{}; document.getElementById('profileShards').textContent=`🧩 ⚪ ${Number(sh.common||0)} · 🔵 ${Number(sh.epic||0)} · 🟡 ${Number(sh.legendary||0)} · 🔮 ${Number(sh.mythic||0)}`;
  const a=document.getElementById('achievementsBox'); const rows=d.achievements||[]; a.innerHTML=rows.length?rows.map(x=>{const target=Number(x.value||0),prog=Number(x.progress||0),pct=target?Math.min(100,prog/target*100):100;return `<div class="achievement ${x.unlocked?'unlocked':''}"><div class="achievement-head"><span>${x.unlocked?'🏆':'🔒'} ${escapeHtml(x.name)}</span><span>${x.unlocked?'✅':`${prog}/${target}`}</span></div><div class="muted">${escapeHtml(x.description||'')}</div><div class="achievement-bar"><i style="width:${pct}%"></i></div>${Number(x.reward||0)>0?`<div class="muted" style="margin-top:5px">Нагорода: +${Number(x.reward).toFixed(2)} LIR</div>`:''}</div>`}).join(''):'<div class="empty">Досягнення ще не налаштовані.</div>';
+
+ } catch(e) {
+   const u=tg?.initDataUnsafe?.user;
+   if(u){
+      const name=[u.first_name,u.last_name].filter(Boolean).join(' ') || u.username || 'Гравець';
+      document.getElementById('profileName').textContent=name;
+      document.getElementById('profileId').textContent='ID: '+u.id+' · ⚠️ API не підключено';
+   } else {
+      document.getElementById('profileName').textContent='Профіль не підключений';
+      document.getElementById('profileId').textContent='Відкрийте Mini App з Telegram';
+   }
+   setStatus('❌ '+e.message);
+ }
 }
 async function claimDaily(){try{const d=await api('/api/daily',{method:'POST',body:'{}'});await loadMe();await loadProfile();await loadInventory();setStatus(d.message||'🎁 Нагороду отримано.')}catch(e){setStatus('❌ '+e.message)}}
 async function exchangeCommon(){try{const d=await api('/api/exchange/common',{method:'POST',body:'{}'});inventoryData=d;await loadInventory(d);await loadMe();await loadProfile();setStatus(d.message||'🔄 Обмін виконано.')}catch(e){setStatus('❌ '+e.message)}}
+async function restoreActiveMatch(showMessage=true){
+    try {
+        const d = await api('/api/match/active');
+        if (d.active && d.match) {
+            openBattle(d.match);
+            if (showMessage) setStatus('⚔️ Відновлено активну дуель.');
+            return true;
+        }
+    } catch(e) {
+        setStatus('❌ '+e.message);
+    }
+    return false;
+}
+
+async function cancelActiveMatch(){
+    try {
+        const d = await api('/api/match/cancel',{method:'POST',body:'{}'});
+        currentMatch=null;
+        document.getElementById('battle').classList.add('hidden');
+        document.getElementById('lobby').classList.remove('hidden');
+        await loadMe();
+        setStatus(d.message || 'Дуель скасовано.');
+    } catch(e){
+        setStatus('❌ '+e.message);
+    }
+}
+
 function navigate(where){
  if(where==='collection'){showPage('duel');document.getElementById('lobby').classList.remove('hidden');document.getElementById('cards')?.scrollIntoView({behavior:'smooth',block:'start'});setBottomNav('collection');return}
- if(where==='arena'){showPage('duel');document.getElementById('lobby').classList.remove('hidden');document.getElementById('battle').classList.add('hidden');setBottomNav('arena');return}
+ if(where==='arena'){showPage('duel');setBottomNav('arena');restoreActiveMatch();return}
  if(where==='profile'){showPage('profile');setBottomNav('profile');loadProfile();return}
  showPage(where);setBottomNav(where); if(where==='inventory')loadInventory(); if(where==='duel')loadCards();
 }
@@ -788,6 +846,7 @@ async function refreshAll() {
         await loadInventory();
         await loadShop();
         await loadProfile();
+        await restoreActiveMatch(false);
         setBottomNav("duel");
         setStatus("");
     } catch(e) {
@@ -796,6 +855,8 @@ async function refreshAll() {
 }
 
 async function startBattle() {
+    const resumed = await restoreActiveMatch(false);
+    if (resumed) return;
     if (!selectedCardId) { setStatus('Спочатку обери картку.'); return; }
     const btn=document.getElementById('startBtn'); btn.disabled=true; setStatus('⚔️ Шукаємо суперника…');
     try {
