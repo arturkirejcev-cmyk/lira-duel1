@@ -56,6 +56,7 @@ body{
 .cardname{font-weight:900;margin-top:7px}
 .rarity{font-size:12px;color:#d5a2ff;margin-top:2px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:7px}
+.stat-bonus{color:#7dffb2;font-size:10px;font-weight:900;margin-left:2px}
 .stat{background:rgba(255,255,255,.05);border-radius:8px;padding:5px;text-align:center;font-size:11px}
 .stat b{display:block;font-size:13px}
 .cooldown{color:#ffb0b0;font-size:11px;margin-top:5px}
@@ -78,7 +79,7 @@ button:disabled{opacity:.4}
 .fighter img{
     width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;background:#15131f
 }
-.fighter-name{font-weight:900;margin:7px 0 3px}
+.fighter-name{font-weight:900;margin:7px 0 3px}.fighter.hit{animation:fighterHit .28s ease-out}@keyframes fighterHit{0%{transform:translateX(0)}35%{transform:translateX(-7px) rotate(-1deg)}70%{transform:translateX(6px) rotate(1deg)}100%{transform:translateX(0)}}
 .hptext{font-size:12px;opacity:.75}
 .hp{
     height:9px;background:rgba(255,255,255,.08);
@@ -104,6 +105,9 @@ button:disabled{opacity:.4}
 .empty{text-align:center;opacity:.55;padding:18px}
 #status{text-align:center;min-height:20px;font-size:12px;opacity:.7;margin:7px 0}
 .hidden{display:none!important}
+
+/* ===== GAME INVENTORY / PROFILE / BOTTOM NAV ===== */
+.inventory-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.slot-badge{padding:7px 10px;border-radius:12px;background:rgba(255,255,255,.07);font-size:12px;font-weight:900}.rarity-filter{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:9px 0}.rarity-filter button{margin:0;padding:9px 4px;font-size:11px;background:rgba(255,255,255,.07)}.rarity-filter button.active{background:linear-gradient(135deg,#8b43ff,#c35cff)}.inventory-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.inv-slot{min-height:76px;border-radius:13px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;text-align:center;padding:5px;cursor:pointer;position:relative}.inv-slot.empty{cursor:default;opacity:.35}.inv-slot .slot-num{position:absolute;left:5px;top:4px;font-size:9px;opacity:.4}.inv-slot .slot-icon{font-size:28px}.inv-slot .slot-name{font-size:9px;font-weight:800;line-height:1.1;margin-top:3px}.inventory-buy{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}.inventory-buy button{margin:0;width:auto;padding:10px 12px;font-size:12px}.card-rarity-title{font-size:12px;font-weight:900;opacity:.75;margin:10px 0 7px}.profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.statbox{background:rgba(0,0,0,.2);border-radius:14px;padding:10px}.statbox b{display:block;font-size:18px;margin-top:3px}.achievement{padding:10px;border-radius:15px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07);margin-top:7px}.achievement.unlocked{border-color:rgba(125,255,178,.35)}.achievement-head{display:flex;justify-content:space-between;gap:8px;font-weight:900}.achievement-bar{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:7px}.achievement-bar i{display:block;height:100%;background:linear-gradient(90deg,#8b43ff,#7dffb2)}.bottom-nav{position:fixed;left:50%;bottom:calc(7px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 16px));display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px;background:rgba(13,11,20,.92);border:1px solid rgba(255,255,255,.1);border-radius:19px;backdrop-filter:blur(14px);z-index:999}.bottom-nav button{margin:0;padding:9px 3px;font-size:10px;background:transparent}.bottom-nav button.active{background:rgba(139,67,255,.35)}body{padding-bottom:calc(105px + env(safe-area-inset-bottom))}.item-detail-icon{font-size:64px;margin:5px}.item-card-preview{width:150px;height:150px;object-fit:cover;border-radius:20px;margin:8px auto;display:block}.upgrade-targets{display:grid;gap:7px;max-height:330px;overflow:auto;text-align:left}.upgrade-target{display:flex;gap:9px;align-items:center;padding:8px;border-radius:13px;background:rgba(255,255,255,.05);cursor:pointer}.upgrade-target img{width:55px;height:55px;object-fit:cover;border-radius:10px}.upgrade-target b{font-size:12px}.upgrade-target small{display:block;opacity:.6;font-size:10px;margin-top:2px}
 
 /* ===== INVENTORY / CHESTS / UPGRADE UI ===== */
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
@@ -228,17 +232,37 @@ button:disabled{opacity:.4}
 </div>
 
 <div id="inventoryPage" class="page">
-  <div class="panel"><div class="section-title">🎒 Інвентар</div><div class="muted">Тут зберігаються твої скрині та покращення.</div></div>
-  <div class="panel"><div class="section-title">🎁 Скрині</div><div id="chests" class="chests"></div></div>
-  <div class="panel"><div class="section-title">🛠️ Покращення</div><div id="upgradeHint" class="muted">Натисни на покращення, щоб подивитися інформацію.</div><div id="upgrades" class="upgrades"></div></div>
-  <div class="panel"><div class="section-title">🎴 Моя колекція</div><div id="invCards" class="cards"></div></div>
+  <div class="panel">
+    <div class="inventory-head"><div><div class="section-title" style="margin-bottom:3px">🎒 Інвентар</div><div class="muted">Картки не займають слоти. Скрині та покращення займають по 1 слоту.</div></div><div class="slot-badge" id="slotBadge">0/25</div></div>
+    <div class="rarity-filter" id="rarityFilter">
+      <button data-rarity="common" onclick="setInventoryRarity('common')">⚪ Звичайні</button>
+      <button data-rarity="epic" onclick="setInventoryRarity('epic')">🔵 Епічні</button>
+      <button data-rarity="legendary" onclick="setInventoryRarity('legendary')">🟡 Легендарні</button>
+      <button data-rarity="mythic" onclick="setInventoryRarity('mythic')">🔮 Міфічні</button>
+    </div>
+    <div id="rarityCards" class="cards"></div>
+    <div id="rarityEmpty" class="empty hidden">Карток цієї рідкості у тебе немає.</div>
+  </div>
+  <div class="panel">
+    <div class="inventory-head"><div class="section-title" style="margin-bottom:0">📦 Слоти</div><div class="muted" id="slotFree">Вільно: 25</div></div>
+    <div id="inventorySlots" class="inventory-slots" style="margin-top:9px"></div>
+    <div class="inventory-buy"><div class="muted">+10 слотів за <b>2.00 LIR</b></div><button onclick="buyInventorySlots()">➕ +10 слотів</button></div>
+  </div>
 </div>
 
 <div id="shopPage" class="page">
-  <div class="panel"><div class="section-title">🛒 Магазин</div><div class="muted">Скрині купуються за частинки. Покращення та картки можуть продаватися за LIR і/або частинки.</div></div>
+  <div class="panel"><div class="section-title">🛒 Магазин</div><div class="muted">Скрині купуються за частинки. Покращення та картки можуть продаватися за LIR і/або частинки.</div><button onclick="exchangeCommon()">🔄 Обмін: 10 ⚪ частинок → 0.10 LIR</button></div>
   <div class="shop-subtabs"><button class="shop-subtab active" id="shopTabStore" onclick="showShopSection('store')">🛍 Купити</button><button class="shop-subtab" id="shopTabPlayers" onclick="showShopSection('players')">👥 Гравці</button></div>
   <div id="shopStore" class="shop-section active"><div class="panel"><div class="section-title">🎁 Скрині за частинки</div><div id="shopChests" class="shop-grid"></div></div><div class="panel"><div class="section-title">🛠️ Товари адміністратора</div><div id="shopItems" class="shop-grid"></div></div></div>
   <div id="shopPlayers" class="shop-section"><div class="panel"><div class="section-title">📣 Товари від гравців</div><div class="market-note">Твої покращення можна виставити на продаж. Після виставлення предмет переходить у магазин і буде переданий покупцю після оплати.</div><div id="marketListings" class="shop-grid" style="margin-top:9px"></div></div></div>
+</div>
+
+<div id="profilePage" class="page">
+  <div class="panel"><div class="section-title">👤 Профіль</div><div class="userline"><div><b id="profileName">—</b><div class="muted" id="profileId">ID: —</div></div><div class="badge">💰 <span id="profileBalance">0.00</span> LIR</div></div></div>
+  <div class="panel"><div class="section-title">📊 Статистика</div><div id="profileStats" class="profile-grid"></div></div>
+  <div class="panel"><div class="section-title">🧩 Частинки</div><div id="profileShards" class="shards-box">⚪ 0 · 🔵 0 · 🟡 0 · 🔮 0</div><button onclick="exchangeCommon()">🔄 Обміняти 10 ⚪ на 0.10 LIR</button></div>
+  <div class="panel"><div class="section-title">🎁 Щоденна нагорода</div><div class="muted">Щодня: +1.00 LIR та +10 XP.</div><button onclick="claimDaily()">🎁 Забрати сьогодні</button></div>
+  <div class="panel"><div class="section-title">🏆 Досягнення</div><div id="achievementsBox"></div></div>
 </div>
 
 <div id="battle" class="hidden">
@@ -307,13 +331,30 @@ button:disabled{opacity:.4}
         <div id="upgradeVisual" class="reward-art"><div class="reward-icon">✨</div></div>
         <div id="upgradeModalText" class="modal-text"></div>
         <div class="modal-buttons">
-            <button onclick="selectUpgradeFromModal()">🎯 Обрати</button>
             <button class="secondary" onclick="closeModal('upgradeModal')">Закрити</button>
         </div>
     </div>
 </div>
 
+<div id="itemModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <div class="modal-title" id="itemModalTitle">📦 Предмет</div>
+    <div id="itemModalVisual" class="item-detail-icon">📦</div>
+    <div id="itemModalText" class="modal-text"></div>
+    <div id="itemModalAction"></div>
+    <button class="secondary" onclick="closeModal('itemModal')">Закрити</button>
+  </div>
+</div>
+
 <div id="status"></div>
+
+<div class="bottom-nav" id="bottomNav">
+  <button data-nav="duel" onclick="navigate('duel')">🏠<br>Головна</button>
+  <button data-nav="collection" onclick="navigate('collection')">🎴<br>Картки</button>
+  <button data-nav="inventory" onclick="navigate('inventory')">🎒<br>Інвентар</button>
+  <button data-nav="arena" onclick="navigate('arena')">⚔️<br>Арена</button>
+  <button data-nav="profile" onclick="navigate('profile')">👤<br>Профіль</button>
+</div>
 
 </div>
 
@@ -330,6 +371,9 @@ const tg = window.Telegram?.WebApp;
 let selectedCardId = null;
 let currentMatch = null;
 let cards = [];
+let inventoryData = null;
+let inventoryRarity = 'common';
+let profileData = null;
 
 if (tg) {
     tg.ready();
@@ -413,6 +457,13 @@ function formatCooldown(value) {
     return "⏳ " + h + " год " + m + " хв";
 }
 
+function statBonus(card,key){
+    const b=card && card.upgrade_bonus ? Number(card.upgrade_bonus[key]||0) : 0;
+    if(!b) return "";
+    const shown=key==="crit_chance" ? (b%1?b.toFixed(1):b.toFixed(0)) : Math.round(b);
+    return `<span class="stat-bonus"> (+${shown})</span>`;
+}
+
 function renderCards() {
     const box = document.getElementById("cards");
 
@@ -437,11 +488,11 @@ function renderCards() {
             <div class="rarity">${escapeHtml(card.rarity)}</div>
 
             <div class="stats">
-                <div class="stat">❤️<b>${card.hp}</b>HP</div>
-                <div class="stat">⚔️<b>${card.power}</b>СИЛ</div>
-                <div class="stat">🛡<b>${card.defense}</b>ЗАХ</div>
-                <div class="stat">⚡<b>${card.speed}</b>ШВ</div>
-                <div class="stat">💥<b>${card.crit_chance}%</b>КРИТ</div>
+                <div class="stat">❤️<b>${card.hp}</b>HP${statBonus(card,"hp")}</div>
+                <div class="stat">⚔️<b>${card.power}</b>СИЛ${statBonus(card,"power")}</div>
+                <div class="stat">🛡<b>${card.defense}</b>ЗАХ${statBonus(card,"defense")}</div>
+                <div class="stat">⚡<b>${card.speed}</b>ШВ${statBonus(card,"speed")}</div>
+                <div class="stat">💥<b>${Number(card.crit_chance||0).toFixed(1)}%</b>КРИТ${statBonus(card,"crit_chance")}</div>
                 <div class="stat">×<b>${card.crit_multiplier}</b>КРИТ</div>
                 <div class="stat">💥<b>${card.damage_type === "magical" ? "Маг" : "Фіз"}</b></div>
             </div>
@@ -523,7 +574,7 @@ const chestInfo = {
   gold:{name:"Золота скриня",icon:"🥇",cls:"chest-gold",text:"Легендарна скриня. Тут випадають тільки легендарні картки.",reward:"Універсальне +5 гарантовано; додаткове покращення — 10% шанс."},
   mythic:{name:"Міфічна скриня",icon:"🔮",cls:"chest-gold chest-mythic",text:"Міфічна скриня. Тут випадають тільки міфічні картки.",reward:"Міфічна картка або міфічна частинка."}
 };
-let inventoryData = null;
+
 let selectedChestType = null;
 let selectedUpgrade = null;
 let selectedUpgradeData = null;
@@ -533,9 +584,10 @@ let queueTimer = null;
 let auto = false;
 
 function showPage(pageName){
-  ["duel","inventory","shop"].forEach(x=>{const p=document.getElementById(x+"Page");if(p)p.classList.toggle("active",x===pageName);const b=document.querySelector('.tab-btn[data-page="'+x+'"]');if(b)b.classList.toggle("active",x===pageName)});
+  ["duel","inventory","shop","profile"].forEach(x=>{const p=document.getElementById(x+"Page");if(p)p.classList.toggle("active",x===pageName);const b=document.querySelector('.tab-btn[data-page="'+x+'"]');if(b)b.classList.toggle("active",x===pageName)});
   if(pageName==="inventory")loadInventory();
   if(pageName==="shop")loadShop();
+  if(pageName==="profile")loadProfile();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -610,17 +662,70 @@ function showReward(rewards,type){
 }
 
 async function loadInventory(passed){
-  try{
     const d=passed||await api("/api/inventory"); inventoryData=d;
-    const ch=document.getElementById("chests");
-    if(ch)ch.innerHTML=(d.chests||[]).filter(x=>Number(x.quantity)>0).map(x=>{const c=chestInfo[x.chest_type]||chestInfo.wood;return `<div class="chest-card" onclick="openChestModal('${x.chest_type}')">${chestVisual(x.chest_type)}<div class="chest-name">${c.icon} ${c.name}</div><div class="chest-count">Кількість: ${x.quantity}</div><div class="chest-hint">Натисни, щоб відкрити</div></div>`}).join("")||'<div class="empty" style="grid-column:1/-1">Скринь поки немає.</div>';
-    const up=document.getElementById("upgrades");
-    if(up)up.innerHTML=(d.upgrades||[]).map(u=>{const i=upgradeInfo(u.upgrade_type,u.value);return `<div class="upgrade-card" onclick='openUpgradeInfo(${JSON.stringify(u)})'><div class="upgrade-art">${i.icon}</div><div style="flex:1"><div class="upgrade-title">${i.title} +${u.value}</div><div class="upgrade-sub">${i.short}</div><button class="sell-btn" onclick='event.stopPropagation();listUpgrade(${u.id},${JSON.stringify(i.title+" +"+u.value)})'>📣 Виставити</button></div></div>`}).join("")||'<div class="empty">Покращень поки немає.</div>';
-    const ic=document.getElementById("invCards");
-    if(ic)ic.innerHTML=(d.cards||[]).map(c=>`<div class="card"><img src="${imageUrl(c.id)}" onerror="this.style.display='none'"><div class="cardname">${escapeHtml(c.name)}</div><div class="rarity">${escapeHtml(c.rarity)} · ❤️${c.hp} ⚔️${c.power} 🛡${c.defense}</div></div>`).join("")||'<div class="empty" style="grid-column:1/-1">Карток немає.</div>';
-    renderInlineLevel(d); renderShards(d.shards||{});
-  }catch(e){const ch=document.getElementById("chests");if(ch)ch.innerHTML='<div class="empty">❌ '+escapeHtml(e.message)+'</div>'}
+    renderInlineLevel(d); renderShards(d.shards||{}); renderInventoryRarity(); renderInventorySlots();
 }
+function rarityLabel(r){return ({common:'⚪ Звичайна',epic:'🔵 Епічна',legendary:'🟡 Легендарна',mythic:'🔮 Міфічна'}[r]||r)}
+function rarityEmoji(r){return ({common:'⚪',epic:'🔵',legendary:'🟡',mythic:'🔮'}[r]||'🎴')}
+function setInventoryRarity(r){inventoryRarity=r;document.querySelectorAll('#rarityFilter button').forEach(b=>b.classList.toggle('active',b.dataset.rarity===r));renderInventoryRarity()}
+function cardStatsHtml(c){return `<div class="stats"><div class="stat">❤️<b>${c.hp}</b>HP${statBonus(c,'hp')}</div><div class="stat">⚔️<b>${c.power}</b>СИЛ${statBonus(c,'power')}</div><div class="stat">🛡<b>${c.defense}</b>ЗАХ${statBonus(c,'defense')}</div><div class="stat">⚡<b>${c.speed}</b>ШВ${statBonus(c,'speed')}</div><div class="stat">💥<b>${Number(c.crit_chance||0).toFixed(1)}%</b>КРИТ${statBonus(c,'crit_chance')}</div><div class="stat">×<b>${c.crit_multiplier}</b>МУЛЬТ</div></div>`}
+function renderInventoryRarity(){
+    const box=document.getElementById('rarityCards'), empty=document.getElementById('rarityEmpty'); if(!box)return;
+    const list=(inventoryData?.cards||[]).filter(c=>String(c.rarity)===inventoryRarity);
+    document.querySelectorAll('#rarityFilter button').forEach(b=>b.classList.toggle('active',b.dataset.rarity===inventoryRarity));
+    if(!list.length){box.innerHTML='';empty.classList.remove('hidden');return} empty.classList.add('hidden');
+    box.innerHTML=list.map(c=>`<div class="card" onclick="showCardDetails(${Number(c.id)})"><img src="${imageUrl(c.id)}" onerror="this.style.opacity=.25"><div class="cardname">${escapeHtml(c.name)}</div><div class="rarity">${rarityLabel(c.rarity)}</div>${cardStatsHtml(c)}</div>`).join('');
+}
+function renderInventorySlots(){
+    const d=inventoryData||{}, slots=d.slots||{used:0,max:25,free:25};
+    const badge=document.getElementById('slotBadge'),free=document.getElementById('slotFree'),box=document.getElementById('inventorySlots');
+    if(badge)badge.textContent=`${slots.used}/${slots.max}`; if(free)free.textContent=`Вільно: ${slots.free}`; if(!box)return;
+    const items=d.items||[]; let html='';
+    for(let i=0;i<slots.max;i++){
+      const it=items[i];
+      if(!it){html+=`<div class="inv-slot empty"><span class="slot-num">${i+1}</span>＋</div>`;continue}
+      const icon=it.kind==='chest'?chestVisual(it.chest_type):upgradeEmoji(it.upgrade_type);
+      const name=it.kind==='chest'?(it.title||rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[it.chest_type]))) : `+${it.value} ${upgradeLabel(it.upgrade_type)}`;
+      html+=`<div class="inv-slot" onclick="openInventoryItem(${i})"><span class="slot-num">${i+1}</span><div><div class="slot-icon">${icon}</div><div class="slot-name">${escapeHtml(name)}</div></div></div>`;
+    }
+    box.innerHTML=html;
+}
+function upgradeEmoji(t){return ({power:'⚔️',defense:'🛡️',hp:'❤️',all:'✨'}[t]||'🛠️')}
+function upgradeLabel(t){return ({power:'Сила',defense:'Захист',hp:'HP',all:'Універсальне'}[t]||t)}
+function chestEmoji(t){return ({wood:'🪵',iron:'🔩',gold:'🥇',mythic:'🔮'}[t]||'🎁')}
+function openInventoryItem(index){
+  const it=(inventoryData?.items||[])[index]; if(!it)return;
+  const title=it.kind==='chest'?(it.title||'🎁 Скриня'):`🛠️ Покращення +${it.value}`;
+  document.getElementById('itemModalTitle').textContent=title;
+  document.getElementById('itemModalVisual').textContent=it.kind==='chest'?chestEmoji(it.chest_type):upgradeEmoji(it.upgrade_type);
+  document.getElementById('itemModalText').textContent=it.kind==='chest'?`Скриня відкриває нагороду рідкості ${rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[it.chest_type]))}. Після відкриття вона зникне зі слота.`:`Це покращення додає +${it.value} до характеристики «${upgradeLabel(it.upgrade_type)}».${it.upgrade_type==='all'?`
+✨ Додатково: Сила +${it.value}, Захист +${it.value}, HP +${it.value}, Маг. захист +${it.value}, Швидкість +${it.value}, Крит +${(Number(it.value)/10).toFixed(1)}%.`:''} Обери картку відповідної рідкості, щоб застосувати його.`;
+  const a=document.getElementById('itemModalAction');
+  a.innerHTML=it.kind==='chest'?`<button onclick="closeModal('itemModal');openChestModal('${escapeHtml(it.chest_type)}')">🔓 Відкрити</button>`:`<button onclick="startUpgradeSelection(${Number(it.id)})">🎯 Використати</button>`;
+  document.getElementById('itemModal').classList.remove('hidden');
+}
+function showCardDetails(cardId){
+ const c=(inventoryData?.cards||[]).find(x=>Number(x.id)===Number(cardId)) || cards.find(x=>Number(x.id)===Number(cardId)); if(!c)return;
+ document.getElementById('itemModalTitle').textContent='🎴 '+(c.name||'Картка');
+ document.getElementById('itemModalVisual').innerHTML=`<img class="item-card-preview" src="${imageUrl(c.id)}">`;
+ document.getElementById('itemModalText').innerHTML=`<b>${escapeHtml(rarityLabel(c.rarity))}</b><br>${cardStatsHtml(c)}`;
+ document.getElementById('itemModalAction').innerHTML='<button class="secondary" onclick="selectCard('+Number(c.id)+');closeModal(\'itemModal\')">⚔️ Обрати для арени</button>';
+ document.getElementById('itemModal').classList.remove('hidden');
+}
+function startUpgradeSelection(upgradeId){
+ closeModal('itemModal');
+ const targets=(inventoryData?.cards||[]).filter(c=>String(c.rarity)===inventoryRarity);
+ if(!targets.length){setStatus('❌ Немає карток вибраної рідкості.');return}
+ document.getElementById('upgradeModalTitle').textContent='🎯 Обери картку';
+ document.getElementById('upgradeModalText').textContent='Покращення буде застосовано до вибраної картки.';
+ document.getElementById('upgradeVisual').innerHTML=`<div class="upgrade-targets">${targets.map(c=>`<div class="upgrade-target" onclick="applyUpgradeFromModal(${upgradeId},${Number(c.id)})"><img src="${imageUrl(c.id)}"><div><b>${escapeHtml(c.name)}</b><small>${rarityLabel(c.rarity)} · ⚔️${c.power} · 🛡${c.defense} · ❤️${c.hp}</small></div></div>`).join('')}</div>`;
+ document.getElementById('upgradeModal').classList.remove('hidden');
+}
+async function applyUpgradeFromModal(upgradeId,cardId){
+ try{const d=await api('/api/inventory/upgrade/apply',{method:'POST',body:JSON.stringify({upgrade_id:upgradeId,card_id:cardId})});closeModal('upgradeModal');inventoryData=d;await loadInventory(d);await loadCards();setStatus(d.message||'✅ Покращення застосовано.');showCardDetails(cardId)}catch(e){setStatus('❌ '+e.message)}
+}
+async function buyInventorySlots(){try{const d=await api('/api/inventory/slots/buy',{method:'POST',body:'{}'});inventoryData=d;await loadInventory(d);await loadMe();setStatus(d.message||'🎒 Слоти збільшено.')}catch(e){setStatus('❌ '+e.message)}}
+
 function renderInlineLevel(d){const l=d?.level;if(!l)return;const e=id=>document.getElementById(id);if(e("levelInline"))e("levelInline").textContent=l.level;const prog=Number(l.progress_xp||0),req=Math.max(1,Number(l.required_xp||1));if(e("levelXpNow"))e("levelXpNow").textContent=prog;if(e("levelXpNext"))e("levelXpNext").textContent=req;if(e("levelProgress"))e("levelProgress").style.width=Math.min(100,prog/req*100)+"%"}
 function renderShards(sh){const e=document.getElementById("shardsBox");if(e)e.textContent=`🧩 Частинки: ⚪ ${Number(sh.common||0)} · 🔵 ${Number(sh.epic||0)} · 🟡 ${Number(sh.legendary||0)} · 🔮 ${Number(sh.mythic||0)}`}
 function showShopSection(section){["store","players"].forEach(x=>{document.getElementById("shop"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===section);document.getElementById("shopTab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===section)})}
@@ -650,15 +755,29 @@ async function autoLoop(){
 
 function playAttackFx(){
     const fx=document.getElementById("attackFx");
-    if(!fx)return;
-    fx.classList.remove("show");
-    void fx.offsetWidth;
-    fx.style.left=(Math.random()*25+37)+"%";
-    fx.style.top=(Math.random()*25+35)+"%";
-    fx.style.setProperty("--a",(Math.random()*35-17)+"deg");
-    fx.classList.add("show");
+    if(fx){fx.classList.remove("show");void fx.offsetWidth;fx.style.left=(Math.random()*25+37)+"%";fx.style.top=(Math.random()*25+35)+"%";fx.style.setProperty("--a",(Math.random()*35-17)+"deg");fx.classList.add("show");}
+    const target=document.getElementById(currentMatch?.turn==='player'?'enemyImg':'playerImg');
+    const fighter=target?.closest('.fighter'); if(fighter){fighter.classList.remove('hit');void fighter.offsetWidth;fighter.classList.add('hit');}
 }
 
+
+async function loadProfile(){
+ const d=await api('/api/profile'); profileData=d; const p=d.profile||{};
+ const name=[p.first_name,p.last_name].filter(Boolean).join(' ') || p.username || 'Гравець';
+ document.getElementById('profileName').textContent=name; document.getElementById('profileId').textContent='ID: '+(p.id||'—'); document.getElementById('profileBalance').textContent=Number(p.balance||0).toFixed(2);
+ document.getElementById('profileStats').innerHTML=[['🎮','Ігор',p.games],['🏆','Перемог',p.wins],['💀','Поразок',p.losses],['🔥','Серія',p.streak],['⚡','Найкраща серія',p.best_streak],['🎴','Різних карток',p.unique_cards]].map(x=>`<div class="statbox"><span>${x[0]} ${x[1]}</span><b>${x[2]||0}</b></div>`).join('');
+ const sh=d.shards||{}; document.getElementById('profileShards').textContent=`🧩 ⚪ ${Number(sh.common||0)} · 🔵 ${Number(sh.epic||0)} · 🟡 ${Number(sh.legendary||0)} · 🔮 ${Number(sh.mythic||0)}`;
+ const a=document.getElementById('achievementsBox'); const rows=d.achievements||[]; a.innerHTML=rows.length?rows.map(x=>{const target=Number(x.value||0),prog=Number(x.progress||0),pct=target?Math.min(100,prog/target*100):100;return `<div class="achievement ${x.unlocked?'unlocked':''}"><div class="achievement-head"><span>${x.unlocked?'🏆':'🔒'} ${escapeHtml(x.name)}</span><span>${x.unlocked?'✅':`${prog}/${target}`}</span></div><div class="muted">${escapeHtml(x.description||'')}</div><div class="achievement-bar"><i style="width:${pct}%"></i></div>${Number(x.reward||0)>0?`<div class="muted" style="margin-top:5px">Нагорода: +${Number(x.reward).toFixed(2)} LIR</div>`:''}</div>`}).join(''):'<div class="empty">Досягнення ще не налаштовані.</div>';
+}
+async function claimDaily(){try{const d=await api('/api/daily',{method:'POST',body:'{}'});await loadMe();await loadProfile();await loadInventory();setStatus(d.message||'🎁 Нагороду отримано.')}catch(e){setStatus('❌ '+e.message)}}
+async function exchangeCommon(){try{const d=await api('/api/exchange/common',{method:'POST',body:'{}'});inventoryData=d;await loadInventory(d);await loadMe();await loadProfile();setStatus(d.message||'🔄 Обмін виконано.')}catch(e){setStatus('❌ '+e.message)}}
+function navigate(where){
+ if(where==='collection'){showPage('duel');document.getElementById('lobby').classList.remove('hidden');document.getElementById('cards')?.scrollIntoView({behavior:'smooth',block:'start'});setBottomNav('collection');return}
+ if(where==='arena'){showPage('duel');document.getElementById('lobby').classList.remove('hidden');document.getElementById('battle').classList.add('hidden');setBottomNav('arena');return}
+ if(where==='profile'){showPage('profile');setBottomNav('profile');loadProfile();return}
+ showPage(where);setBottomNav(where); if(where==='inventory')loadInventory(); if(where==='duel')loadCards();
+}
+function setBottomNav(active){document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===active))}
 
 async function refreshAll() {
     try {
@@ -668,6 +787,8 @@ async function refreshAll() {
         await loadHistory();
         await loadInventory();
         await loadShop();
+        await loadProfile();
+        setBottomNav("duel");
         setStatus("");
     } catch(e) {
         setStatus("❌ " + e.message);
@@ -675,51 +796,14 @@ async function refreshAll() {
 }
 
 async function startBattle() {
-    if (!selectedCardId) {
-        setStatus("Спочатку обери картку.");
-        return;
-    }
-
-    const btn = document.getElementById("startBtn");
-    btn.disabled = true;
-    setStatus("🔎 Шукаємо іншого гравця…");
-
+    if (!selectedCardId) { setStatus('Спочатку обери картку.'); return; }
+    const btn=document.getElementById('startBtn'); btn.disabled=true; setStatus('⚔️ Шукаємо суперника…');
     try {
-        await api("/api/match/queue", {
-            method: "POST",
-            body: JSON.stringify({ card_id: selectedCardId })
-        });
-
-        // Даємо PvP невелике вікно пошуку. Якщо нікого немає — NPC.
-        const deadline = Date.now() + 120000;
-        while (Date.now() < deadline) {
-            const q = await api("/api/match/queue/status");
-
-            if (q.status === "matched" && q.match) {
-                openBattle(q.match);
-                setStatus("👤 Знайдено іншого гравця!");
-                await loadMe();
-                return;
-            }
-
-            setStatus("🔎 Шукаємо суперника… " + Math.max(1, Math.ceil((deadline - Date.now()) / 1000)) + " с");
-            await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-
-        // Нікого не знайшли — запускаємо NPC-бій.
-        const data = await api("/api/match/start", {
-            method: "POST",
-            body: JSON.stringify({ card_id: selectedCardId })
-        });
-
-        openBattle(data.match);
-        setStatus("🤖 Гравця не знайдено — суперник NPC.");
-        await loadMe();
-
-    } catch(e) {
-        setStatus("❌ " + e.message);
-        btn.disabled = false;
-    }
+      const data=await api('/api/match/start',{method:'POST',body:JSON.stringify({card_id:selectedCardId})});
+      openBattle(data.match);
+      setStatus(data.matched?'👤 Знайдено іншого гравця!':'🤖 Суперника підібрано автоматично.');
+      await loadMe();
+    } catch(e){setStatus('❌ '+e.message);btn.disabled=false;}
 }
 
 function openBattle(match) {
@@ -736,10 +820,10 @@ function renderMatch(m) {
     const e = m.enemy;
 
     document.getElementById("playerName").textContent =
-        p.card.name;
+        p.card.name + (p.level!=null ? ` · LVL ${p.level}` : '') + (p.wins!=null ? ` · 🏆${p.wins}` : '');
 
     document.getElementById("enemyName").textContent =
-        e.card.name;
+        e.card.name + (e.level!=null ? ` · LVL ${e.level}` : '') + (e.wins!=null ? ` · 🏆${e.wins}` : '');
 
     document.getElementById("playerImg").src =
         imageUrl(p.card.id);
