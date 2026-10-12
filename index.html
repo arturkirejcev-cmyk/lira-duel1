@@ -143,7 +143,7 @@ button:disabled{opacity:.4}
 .level-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8b43ff,#ff73ce);transition:width .5s}
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;z-index:1000}
 .modal-card{width:min(430px,100%);background:linear-gradient(180deg,#1b1428,#0c0b12);border:1px solid rgba(255,255,255,.12);border-radius:26px;padding:18px;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.6)}
-.modal-title{font-size:21px;font-weight:1000}.modal-text{font-size:13px;opacity:.72;line-height:1.45;margin:8px 0 14px}
+.modal-title{font-size:21px;font-weight:1000}.modal-text{font-size:13px;opacity:.72;line-height:1.45;margin:8px 0 14px;white-space:pre-line}
 .reward-art{width:150px;height:130px;margin:8px auto 14px;display:flex;align-items:center;justify-content:center}
 .reward-art .chest-box{transform:scale(1.45)}
 .reward-icon{font-size:72px;filter:drop-shadow(0 8px 16px rgba(189,115,255,.3))}
@@ -161,6 +161,12 @@ button:disabled{opacity:.4}
 @media(max-width:420px){.chests{grid-template-columns:1fr 1fr}.tabs{gap:5px}.tab-btn{font-size:12px}}
 
 
+/* Inventory layout fixes */
+#inventorySlots{grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;min-width:0}
+#inventorySlots .inv-slot{min-width:0;overflow:hidden;padding:5px 2px;min-height:82px}
+#inventorySlots .slot-icon{font-size:24px;line-height:1.1;max-width:100%;overflow:hidden}
+#inventorySlots .slot-name{overflow-wrap:anywhere;word-break:break-word;white-space:normal;font-size:9px}
+@media(max-width:360px){#inventorySlots{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* ===== LIRA CHEST ARTWORK ===== */
 .lira-chest-art{width:92px;height:76px;object-fit:contain;display:block;filter:drop-shadow(0 8px 12px rgba(0,0,0,.42));transition:transform .25s ease,filter .25s ease}
 .chest-card:hover .lira-chest-art{transform:translateY(-2px) scale(1.04)}
@@ -274,7 +280,7 @@ button:disabled{opacity:.4}
 </div>
 
 <div id="shopPage" class="page">
-  <div class="panel"><div class="section-title">🛒 Магазин</div><div class="muted">Скрині купуються за частинки. Покращення та картки можуть продаватися за LIR і/або частинки.</div><button onclick="exchangeCommon()">🔄 Обмін: 10 ⚪ частинок → 0.10 LIR</button></div>
+  <div class="panel"><div class="section-title">🛒 Магазин</div><div class="muted">Скрині купуються за частинки. Покращення та картки можуть продаватися за LIR і/або частинки.</div><div id="shardsBox" class="shards-box">🧩 Частинки: ⚪ 0 · 🔵 0 · 🟡 0 · 🔮 0</div><button onclick="exchangeCommon()">🔄 Обмін: 10 ⚪ частинок → 0.10 LIR</button></div>
   <div class="shop-subtabs"><button class="shop-subtab active" id="shopTabStore" onclick="showShopSection('store')">🛍 Купити</button><button class="shop-subtab" id="shopTabPlayers" onclick="showShopSection('players')">👥 Гравці</button></div>
   <div id="shopStore" class="shop-section active"><div id="adminShopPanel" class="panel" style="display:none"><div class="section-title">👑 Керування цінами</div><div class="muted">Власник може змінити ціну активного товару прямо з Mini App.</div><div id="adminShopItems" class="shop-grid"></div></div><div class="panel"><div class="section-title">🎁 Скрині за частинки</div><div id="shopChests" class="shop-grid"></div></div><div class="panel"><div class="section-title">🛠️ Товари адміністратора</div><div id="shopItems" class="shop-grid"></div></div></div>
   <div id="shopPlayers" class="shop-section"><div class="panel"><div class="section-title">📣 Товари від гравців</div><div class="market-note">Твої покращення можна виставити на продаж. Після виставлення предмет переходить у магазин і буде переданий покупцю після оплати.</div><div id="marketListings" class="shop-grid" style="margin-top:9px"></div></div></div>
@@ -317,6 +323,8 @@ button:disabled{opacity:.4}
         <div id="turn" class="muted" style="text-align:center;margin-top:10px">—</div>
 
         <button id="attackBtn" onclick="attack()">⚔️ Атакувати</button>
+        <button id="autoBtn" class="secondary" onclick="toggleAuto()">🤖 Автобій: ВИМК</button>
+        <div class="shop-subtabs" style="margin-top:8px"><button class="shop-subtab active" data-speed="1" onclick="setSpeed(1)">Нормально</button><button class="shop-subtab" data-speed="2" onclick="setSpeed(2)">Швидше ×2</button></div>
         <button id="surrenderBtn" class="danger" onclick="surrender()">🏳️ Здатися</button>
 
         <div class="log" id="battleLog"></div>
@@ -492,22 +500,13 @@ async function checkApiHealth(){
 
 async function loadMe() {
     const data = await api("/api/me");
-
-    const u = data.user;
-    document.getElementById("username").textContent =
-        u.first_name || u.username || ("ID " + u.id);
-
-    document.getElementById("xp").textContent = u.xp;
-    document.getElementById("level").textContent = u.level;
-    document.getElementById("balance").textContent =
-        Number(u.balance || 0).toFixed(2);
-
-    document.getElementById("energy").textContent =
-        data.energy.current;
-    if(inventoryData?.level){
-        const el=document.getElementById("levelBig");
-        if(el)el.textContent=u.level;
-    }
+    const u = data.user || {};
+    const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+    set("homeName", u.first_name || u.username || ("ID " + (u.id || "—")));
+    set("homeBalance", Number(u.balance || 0).toFixed(2));
+    set("energy", data.energy?.current ?? data.energy ?? "—");
+    set("homeEnergy", data.energy?.current ?? data.energy ?? "—");
+    return data;
 }
 
 function formatCooldown(value) {
@@ -607,7 +606,8 @@ async function loadHistory() {
     const data = await api("/api/history");
     const box = document.getElementById("history");
 
-    if (!data.history.length) {
+    const history = Array.isArray(data.history) ? data.history : [];
+    if (!history.length) {
         box.textContent = "Дуелей ще не було.";
         box.className = "empty";
         return;
@@ -615,7 +615,7 @@ async function loadHistory() {
 
     box.className = "";
 
-    box.innerHTML = data.history.map(item => {
+    box.innerHTML = history.map(item => {
         const win = item.winner_id &&
             String(item.winner_id) === String(
                 tg?.initDataUnsafe?.user?.id
@@ -649,6 +649,7 @@ let queueTimer = null;
 let auto = false;
 
 function showPage(pageName){
+  if(pageName!=="arena" && auto) stopAuto();
   ["home","collection","arena","inventory","shop","profile"].forEach(x=>{
     const p=document.getElementById(x+"Page");
     if(p)p.classList.toggle("active",x===pageName);
@@ -675,12 +676,17 @@ function closeModal(id){
     if(el) el.classList.add("hidden");
 }
 
+function normalizeChestType(type){
+    return ({common:"wood",epic:"iron",legendary:"gold",mythic:"mythic"}[String(type)] || String(type));
+}
 function openChestModal(type){
-    const c=chestInfo[type];
-    if(!c) return;
-    selectedChestType=type;
+    const rawType=String(type||"");
+    const visualType=normalizeChestType(rawType);
+    const c=chestInfo[visualType];
+    if(!c){setStatus("Не вдалося визначити тип скрині: "+rawType);return;}
+    selectedChestType=rawType;
     document.getElementById("chestModalTitle").textContent=c.icon+" "+c.name;
-    document.getElementById("chestOpeningVisual").innerHTML=chestVisual(type);
+    document.getElementById("chestOpeningVisual").innerHTML=chestVisual(visualType);
     document.getElementById("chestModalText").textContent=c.text+" "+c.reward;
     document.getElementById("chestOpenButton").disabled=false;
     document.getElementById("chestModal").classList.remove("hidden");
@@ -688,50 +694,50 @@ function openChestModal(type){
 
 async function confirmOpenChest(){
     if(!selectedChestType) return;
-    const type=selectedChestType;
-    const btn=document.getElementById("chestOpenButton");
+    const type=selectedChestType, btn=document.getElementById("chestOpenButton");
+    if(btn.disabled) return;
     btn.disabled=true;
-    const visual=document.getElementById("chestOpeningVisual");
-    visual.innerHTML=chestVisual(type,true);
+    document.getElementById("chestOpeningVisual").innerHTML=chestVisual(normalizeChestType(type),true);
     document.getElementById("chestModalText").textContent="✨ Скриня відкривається...";
-    await new Promise(r=>setTimeout(r,1100));
     try{
-        const d=await api("/api/inventory/chest/open",{
-            method:"POST",
-            body:JSON.stringify({chest_type:type})
-        });
-        closeModal("chestModal");
-        await loadMe();
+        await new Promise(r=>setTimeout(r,650));
+        const d=await api("/api/inventory/chest/open",{method:"POST",body:JSON.stringify({chest_type:type})});
+        closeModal("chestModal"); selectedChestType=null;
+        await Promise.allSettled([loadMe(),loadCards()]);
         await loadHome();
-        await loadCards();
-        await loadInventory(d);
+        if (d.inventory && Array.isArray(d.inventory.items)) await loadInventory(d.inventory);
+        else if (Array.isArray(d.items) && d.slots) await loadInventory(d);
+        else await loadInventory();
+        await Promise.allSettled([loadProfile(),loadShop()]);
         showReward(d.rewards||[],type);
     }catch(e){
         btn.disabled=false;
         document.getElementById("chestModalText").textContent="❌ "+e.message;
+        setStatus("❌ Не вдалося відкрити скриню: "+e.message);
     }
 }
-
 function showReward(rewards,type){
-    const r=(rewards||[])[0]||{};
-    const visual=document.getElementById("rewardVisual");
-    let title="🎁 Нагорода";
-    let text=r.text||"Нагороду отримано.";
-    if(r.type==="upgrade"){
-        const map={defense:["🛡️","Покращення захисту","Збільшує захист картки на +"+r.value+"."],hp:["❤️","Покращення HP","Збільшує максимальне HP картки на +"+r.value+"."],power:["⚔️","Покращення сили","Збільшує силу картки на +"+r.value+"."],all:["✨","Універсальне покращення","Одразу підсилює всі основні характеристики картки."]};
-        const x=map[r.upgrade_type]||["✨","Покращення","Покращення для картки."];
-        visual.innerHTML=`<div class="reward-icon">${x[0]}</div>`;
-        title=x[1];
-        text=x[2]+" Воно вже знаходиться в інвентарі та його можна застосувати до картки.";
-    }else if(r.type==="card" && r.card_id){
-        visual.innerHTML=`<img class="reward-card-img" src="${imageUrl(r.card_id)}">`;
-        title="🎴 Нова картка";
-        text=text+" Картку додано до твоєї колекції.";
+    const list=Array.isArray(rewards)?rewards:[];
+    const visual=document.getElementById("rewardVisual"), titleEl=document.getElementById("rewardTitle"), textEl=document.getElementById("rewardText");
+    const label=chestInfo[normalizeChestType(type)]?.name || "Скриня";
+    if(!list.length){
+        visual.innerHTML='<div class="reward-icon">🎁</div>';
+        titleEl.textContent="Скриню відкрито";
+        textEl.textContent=label+" відкрита. Сервер не повернув опис нагороди; перевір інвентар і колекцію.";
     }else{
-        visual.innerHTML=`<div class="reward-icon">${r.type==="xp"?"⭐":r.type==="lir"?"💰":"🎁"}</div>`;
+        const describe=r=>{
+            if(r.type==="upgrade") return `${upgradeEmoji(r.upgrade_type)} Покращення «${upgradeLabel(r.upgrade_type)}» +${Number(r.value||0)} — додано до інвентарю.`;
+            if(r.type==="card") return `🎴 Картка ${r.name||r.card_name||("ID "+(r.card_id||""))} — додано до колекції.`;
+            if(r.type==="lir") return `💰 +${Number(r.value??r.amount??0).toFixed(2)} LIR`;
+            if(r.type==="xp") return `⭐ +${Number(r.value??r.amount??0)} XP`;
+            return String(r.text||r.name||r.title||"Предмет отримано");
+        };
+        const first=list[0]||{};
+        if(first.type==="card"&&first.card_id) visual.innerHTML=`<img class="reward-card-img" src="${imageUrl(first.card_id)}" alt="Отримана картка">`;
+        else visual.innerHTML=`<div class="reward-icon">${first.type==="upgrade"?upgradeEmoji(first.upgrade_type):first.type==="lir"?"💰":first.type==="xp"?"⭐":first.type==="card"?"🎴":"🎁"}</div>`;
+        titleEl.textContent=list.length===1?"Нагороду отримано":`Отримано нагород: ${list.length}`;
+        textEl.textContent=`${label} успішно відкрита!\n\n`+list.map((r,i)=>`${i+1}. ${describe(r)}`).join("\n");
     }
-    document.getElementById("rewardTitle").textContent=title;
-    document.getElementById("rewardText").textContent=text;
     document.getElementById("rewardModal").classList.remove("hidden");
 }
 
@@ -812,8 +818,8 @@ function renderInventorySlots(){
     for(let i=0;i<slots.max;i++){
       const it=items[i];
       if(!it){html+=`<div class="inv-slot empty"><span class="slot-num">${i+1}</span>＋</div>`;continue}
-      const icon=it.kind==='chest'?chestVisual(it.chest_type):upgradeEmoji(it.upgrade_type);
-      const name=it.kind==='chest'?(it.title||rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[it.chest_type]))) : `+${it.value} ${upgradeLabel(it.upgrade_type)}`;
+      const icon=it.kind==='chest'?chestEmoji(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
+      const normalized=normalizeChestType(it.chest_type); const name=it.kind==='chest'?(it.title||rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[normalized])||normalized)) : `+${it.value} ${upgradeLabel(it.upgrade_type)}`;
       html+=`<div class="inv-slot" onclick="openInventoryItem(${i})"><span class="slot-num">${i+1}</span><div><div class="slot-icon">${icon}</div><div class="slot-name">${escapeHtml(name)}</div></div></div>`;
     }
     box.innerHTML=html;
@@ -825,8 +831,8 @@ function openInventoryItem(index){
   const it=(inventoryData?.items||[])[index]; if(!it)return;
   const title=it.kind==='chest'?(it.title||'🎁 Скриня'):`🛠️ Покращення +${it.value}`;
   document.getElementById('itemModalTitle').textContent=title;
-  document.getElementById('itemModalVisual').textContent=it.kind==='chest'?chestEmoji(it.chest_type):upgradeEmoji(it.upgrade_type);
-  document.getElementById('itemModalText').textContent=it.kind==='chest'?`Скриня відкриває нагороду рідкості ${rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[it.chest_type]))}. Після відкриття вона зникне зі слота.`:`Це покращення додає +${it.value} до характеристики «${upgradeLabel(it.upgrade_type)}».${it.upgrade_type==='all'?`
+  document.getElementById('itemModalVisual').textContent=it.kind==='chest'?chestEmoji(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
+  document.getElementById('itemModalText').textContent=it.kind==='chest'?`Скриня відкриває нагороду відповідного типу (${rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[normalizeChestType(it.chest_type)])||normalizeChestType(it.chest_type))}). Після успішного відкриття вона має зникнути зі слота.`:`Це покращення додає +${it.value} до характеристики «${upgradeLabel(it.upgrade_type)}».${it.upgrade_type==='all'?`
 ✨ Додатково: Сила +${it.value}, Захист +${it.value}, HP +${it.value}, Маг. захист +${it.value}, Швидкість +${it.value}, Крит +${(Number(it.value)/10).toFixed(1)}%.`:''} Обери картку відповідної рідкості, щоб застосувати його.`;
   const a=document.getElementById('itemModalAction');
   a.innerHTML=it.kind==='chest'?`<button onclick="closeModal('itemModal');openChestModal('${escapeHtml(it.chest_type)}')">🔓 Відкрити</button>`:`<div class="card-action-grid"><button onclick="startUpgradeSelection(${Number(it.id)})">🎯 Використати</button><button class="secondary" onclick="listUpgrade(${Number(it.id)},'🛠️ +${Number(it.value)} ${escapeHtml(upgradeLabel(it.upgrade_type))}')">🏪 Продати</button></div>`;
@@ -902,7 +908,7 @@ function renderInlineLevel(d){const l=d?.level;if(!l)return;const e=id=>document
 function renderShards(sh){const e=document.getElementById("shardsBox");if(e)e.textContent=`🧩 Частинки: ⚪ ${Number(sh.common||0)} · 🔵 ${Number(sh.epic||0)} · 🟡 ${Number(sh.legendary||0)} · 🔮 ${Number(sh.mythic||0)}`}
 function showShopSection(section){["store","players"].forEach(x=>{document.getElementById("shop"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===section);document.getElementById("shopTab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===section)})}
 function shopPrice(it){const a=[];if(Number(it.price_lir)>0)a.push(Number(it.price_lir).toFixed(2)+" LIR");if(Number(it.price_shards)>0)a.push(Number(it.price_shards)+" "+({common:"⚪ част.",epic:"🔵 част.",legendary:"🟡 част.",mythic:"🔮 част."}[it.shard_rarity]||"част."));return a.join(" + ")}
-async function loadShop(){try{const d=await api("/api/shop");renderShards(d.shards||{}); if(!profileData)try{profileData=await api('/api/profile')}catch(_){} const ap=document.getElementById("adminShopPanel"),ab=document.getElementById("adminShopItems"); if(ap&&profileData?.profile?.is_admin){ap.style.display="block"; if(ab)ab.innerHTML=(d.items||[]).map(it=>`<div class="shop-item"><div class="shop-item-main"><b>${escapeHtml(it.title)}</b><div class="muted">#${it.id}</div><input id="apL${it.id}" type="number" step="0.01" min="0" value="${Number(it.price_lir||0)}" placeholder="LIR"><input id="apS${it.id}" type="number" step="1" min="0" value="${Number(it.price_shards||0)}" placeholder="Частинки"><select id="apR${it.id}"><option value="common">common</option><option value="epic">epic</option><option value="legendary">legendary</option><option value="mythic">mythic</option></select><button onclick="updateShopPrice(${it.id})">💾 Зберегти</button></div></div>`).join(""); }const ch=document.getElementById("shopChests");const seenChest=new Set();const ci=(d.items||[]).filter(x=>x.item_type==="chest").filter(x=>{const k=String(x.item_ref);if(seenChest.has(k))return false;seenChest.add(k);return true;});if(ch)ch.innerHTML=ci.map(it=>`<div class="shop-item"><div class="shop-item-art">${chestVisual(it.item_ref)}</div><div class="shop-item-main"><div class="shop-item-title">${escapeHtml(it.title)}</div><div class="shop-item-desc">За ${it.shard_rarity} частинки</div><div class="price-line">Ціна: <b>${escapeHtml(shopPrice(it))}</b></div><button onclick="buyShop(${it.id})">🛒 Купити</button></div></div>`).join("")||'<div class="empty">Скрині ще не налаштовані.</div>';const si=document.getElementById("shopItems");const other=(d.items||[]).filter(x=>x.item_type!=="chest");if(si)si.innerHTML=other.map(it=>{let desc=it.title;if(it.card)desc+=` · ${it.card.rarity} · ❤️${it.card.hp} ⚔️${it.card.power} 🛡${it.card.defense}`;return `<div class="shop-item"><div class="shop-item-main"><div class="shop-item-title">${escapeHtml(it.title)}</div><div class="shop-item-desc">${escapeHtml(desc)}</div><div class="price-line">Ціна: <b>${escapeHtml(shopPrice(it))}</b></div><button onclick="buyShop(${it.id})">🛒 Купити</button></div></div>`}).join("")||'<div class="empty">Товарів адміністратора поки немає.</div>';const ml=document.getElementById("marketListings");if(ml)ml.innerHTML=(d.listings||[]).map(l=>`<div class="market-item"><div><b>${escapeHtml(l.title)}</b><br><small>Продавець: #${l.seller_id}</small><div class="price-line">${escapeHtml(shopPrice(l))}</div></div><button onclick="buyMarket(${l.id})">Купити</button></div>`).join("")||'<div class="empty">Гравці ще нічого не виставили.</div>'}catch(e){setStatus("❌ "+e.message)}}
+async function loadShop(){try{const d=await api("/api/shop");renderShards(d.shards||{}); if(!profileData)try{profileData=await api('/api/profile')}catch(_){} const ap=document.getElementById("adminShopPanel"),ab=document.getElementById("adminShopItems"); if(ap&&profileData?.profile?.is_admin){ap.style.display="block"; if(ab)ab.innerHTML=(d.items||[]).map(it=>`<div class="shop-item"><div class="shop-item-main"><b>${escapeHtml(it.title)}</b><div class="muted">#${it.id}</div><input id="apL${it.id}" type="number" step="0.01" min="0" value="${Number(it.price_lir||0)}" placeholder="LIR"><input id="apS${it.id}" type="number" step="1" min="0" value="${Number(it.price_shards||0)}" placeholder="Частинки"><select id="apR${it.id}">${['common','epic','legendary','mythic'].map(r=>`<option value="${r}" ${String(it.shard_rarity||'common')===r?'selected':''}>${r}</option>`).join('')}</select><button onclick="updateShopPrice(${it.id})">💾 Зберегти</button></div></div>`).join(""); }const ch=document.getElementById("shopChests");const seenChest=new Set();const ci=(d.items||[]).filter(x=>x.item_type==="chest").filter(x=>{const k=String(x.item_ref);if(seenChest.has(k))return false;seenChest.add(k);return true;});if(ch)ch.innerHTML=ci.map(it=>`<div class="shop-item"><div class="shop-item-art">${chestVisual(it.item_ref)}</div><div class="shop-item-main"><div class="shop-item-title">${escapeHtml(it.title)}</div><div class="shop-item-desc">${Number(it.price_lir||0)>0&&Number(it.price_shards||0)>0?'Оплата LIR + частинками':Number(it.price_lir||0)>0?'Оплата LIR':`Оплата частинками ${({common:'⚪',epic:'🔵',legendary:'🟡',mythic:'🔮'}[it.shard_rarity]||'🧩')}`}</div><div class="price-line">Ціна: <b>${escapeHtml(shopPrice(it))}</b></div><button onclick="buyShop(${it.id})">🛒 Купити</button></div></div>`).join("")||'<div class="empty">Скрині ще не налаштовані.</div>';const si=document.getElementById("shopItems");const other=(d.items||[]).filter(x=>x.item_type!=="chest");if(si)si.innerHTML=other.map(it=>{let desc=it.title;if(it.card)desc+=` · ${it.card.rarity} · ❤️${it.card.hp} ⚔️${it.card.power} 🛡${it.card.defense}`;return `<div class="shop-item"><div class="shop-item-main"><div class="shop-item-title">${escapeHtml(it.title)}</div><div class="shop-item-desc">${escapeHtml(desc)}</div><div class="price-line">Ціна: <b>${escapeHtml(shopPrice(it))}</b></div><button onclick="buyShop(${it.id})">🛒 Купити</button></div></div>`}).join("")||'<div class="empty">Товарів адміністратора поки немає.</div>';const ml=document.getElementById("marketListings");if(ml)ml.innerHTML=(d.listings||[]).map(l=>`<div class="market-item"><div><b>${escapeHtml(l.title)}</b><br><small>Продавець: #${l.seller_id}</small><div class="price-line">${escapeHtml(shopPrice(l))}</div></div><button onclick="buyMarket(${l.id})">Купити</button></div>`).join("")||'<div class="empty">Гравці ще нічого не виставили.</div>'}catch(e){setStatus("❌ "+e.message)}}
 async function updateShopPrice(id){try{const d=await api('/api/shop/admin/update',{method:'POST',body:JSON.stringify({item_id:id,price_lir:Number(document.getElementById('apL'+id)?.value||0),price_shards:Number(document.getElementById('apS'+id)?.value||0),shard_rarity:document.getElementById('apR'+id)?.value||'common'})});await loadShop();setStatus(d.message||'💰 Ціну оновлено.')}catch(e){setStatus('❌ '+e.message)}}
 async function buyShop(id){const ok=confirm("🛒 Підтвердити покупку?\n\nПеревір баланс та частинки перед підтвердженням.");if(!ok)return;try{const d=await api("/api/shop/buy",{method:"POST",body:JSON.stringify({item_id:id})});inventoryData=d;await loadInventory(d);await loadMe();await loadShop();setStatus(d.message||"✅ Куплено.")}catch(e){setStatus("❌ "+e.message)}}
 async function buyMarket(id){try{const d=await api("/api/shop/market/buy",{method:"POST",body:JSON.stringify({listing_id:id})});inventoryData=d;await loadInventory(d);await loadShop();setStatus(d.message||"✅ Куплено.")}catch(e){setStatus("❌ "+e.message)}}
@@ -913,11 +919,21 @@ function setSpeed(n){
     document.querySelectorAll("[data-speed]").forEach(b=>b.classList.toggle("active",+b.dataset.speed===n));
 }
 
-function toggleAuto(){
-    auto=!auto;
+function stopAuto(){
+    auto=false;
+    clearTimeout(autoTimer);
+    autoTimer=null;
     const b=document.getElementById("autoBtn");
-    if(b)b.textContent="🤖 Автобій: "+(auto?"УВІМК":"ВИМК");
-    if(auto)autoLoop();else clearTimeout(autoTimer);
+    if(b)b.textContent="🤖 Автобій: ВИМК";
+}
+
+function toggleAuto(){
+    if(auto){stopAuto();return;}
+    if(!currentMatch || currentMatch.finished){setStatus("Спочатку почни дуель, щоб увімкнути автобій.");return;}
+    auto=true;
+    const b=document.getElementById("autoBtn");
+    if(b)b.textContent="🤖 Автобій: УВІМК";
+    autoLoop();
 }
 
 async function autoLoop(){
@@ -946,7 +962,7 @@ async function loadHome(){
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
     set('homeName',name); set('homeUsername',username?('@'+username):'Telegram'); set('homeLevel',level); set('homeXp',xp); set('homeXpNext',req);
     set('homeBalance',Number(p.balance||0).toFixed(2)); set('homeCards',Number(p.unique_cards||0)); set('homeWins',Number(p.wins||0)); set('homeStreak',Number(p.streak||0));
-    const me=await api('/api/me'); set('homeEnergy',Number(me.energy||0));
+    const me=await api('/api/me'); set('homeEnergy',Number(me.energy?.current ?? me.energy ?? 0));
     const sh=d.shards||{}; set('homeShards',Number(sh.common||0)+Number(sh.epic||0)+Number(sh.legendary||0)+Number(sh.mythic||0));
     const bar=document.getElementById('homeXpBar'); if(bar)bar.style.width=Math.min(100,xp/req*100)+'%';
     const avatar=document.getElementById('homeAvatar'); const photo=u.photo_url;
@@ -1035,25 +1051,27 @@ function navigate(where){
 function setBottomNav(active){document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===active))}
 
 async function refreshAll() {
-    try {
-        setStatus("Оновлення…");
-        await checkApiHealth();
-loadFlyerMini();
-        await loadMe();
-        await loadCards();
-        await loadHistory();
-        await loadCollection();
-        await loadInventory();
-        await loadShop();
-        await loadProfile();
-        await restoreActiveMatch(false);
-        setBottomNav("home");
-        setStatus("");
-    } catch(e) {
-        setStatus("❌ " + e.message);
-    }
+    setStatus("Оновлення…");
+    const jobs = await Promise.allSettled([
+        checkApiHealth(),
+        loadMe(),
+        loadCards(),
+        loadHistory(),
+        loadCollection(),
+        loadInventory(),
+        loadShop(),
+        loadProfile(),
+        loadFlyerMini()
+    ]);
+    // The homepage has extra fields from /api/profile; load it after /api/me
+    // so the full name/profile values are not overwritten by the shorter /api/me response.
+    await loadHome();
+    await restoreActiveMatch(false);
+    const activePage = document.querySelector(".page.active")?.id?.replace("Page", "") || "home";
+    setBottomNav(activePage);
+    const failed = jobs.filter(x => x.status === "rejected");
+    setStatus(failed.length ? "⚠️ Частина даних не завантажилась. Перевір підключення до API та натисни «Оновити»." : "");
 }
-
 async function startBattle() {
     const resumed = await restoreActiveMatch(false);
     if (resumed) return;
@@ -1123,6 +1141,7 @@ function renderMatch(m) {
     const result = document.getElementById("result");
 
     if (m.finished) {
+        stopAuto();
         result.classList.remove("hidden");
 
         if (m.winner === "player") {
@@ -1231,6 +1250,7 @@ async function surrender() {
 }
 
 function backLobby() {
+    stopAuto();
     document.getElementById("battle").classList.add("hidden");
     document.getElementById("lobby").classList.remove("hidden");
     currentMatch = null;
