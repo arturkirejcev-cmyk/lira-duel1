@@ -313,6 +313,7 @@ button:disabled{opacity:.4}
   <div class="panel"><div class="section-title">📊 Статистика</div><div id="profileStats" class="profile-grid"></div></div>
   <div class="panel"><div class="section-title">🧩 Частинки</div><div id="profileShards" class="shards-box">⚪ 0 · 🔵 0 · 🟡 0 · 🔮 0</div><button onclick="exchangeCommon()">🔄 Обміняти 10 ⚪ на 0.10 LIR</button></div>
   <div class="panel"><div class="section-title">🎁 Щоденна нагорода</div><div class="muted">Щодня: +1.00 LIR та +10 XP.</div><button onclick="claimDaily()">🎁 Забрати сьогодні</button></div>
+  <div class="panel"><div class="section-title">🎵 Музика гри</div><div class="muted">Музика меню грає на головному екрані, у картках, інвентарі, арені, магазині та профілі. Для битв і відкривання скринь автоматично вмикаються окремі треки.</div><button id="profileMusicToggle" onclick="toggleProfileMusic()">🔇 Увімкнути музику</button><div class="muted" style="margin-top:12px;line-height:1.7"><b>☕ Меню:</b> Lo-fi Gaming — грає в усіх розділах, крім битви та відкривання скрині.<br><b>🌌 Скрині:</b> Game Synthwave — грає під час відкривання скрині й показу отриманих нагород.<br><b>💜 Битви:</b> Chillout — грає тільки всередині бою.<br><br><small>MP3-файли мають лежати поруч із HTML у папці <b>music</b>.</small></div></div>
   <div class="panel"><div class="section-title">🏆 Досягнення</div><div id="achievementsBox"></div></div>
 </div>
 
@@ -694,13 +695,13 @@ function chestVisual(type, opening=false){
 function closeModal(id){
     const el=document.getElementById(id);
     if(el) el.classList.add("hidden");
+    if(id === 'rewardModal' && typeof LiraMusic !== 'undefined') LiraMusic.endChest();
 }
 
 function normalizeChestType(type){
     return ({common:"wood",epic:"iron",legendary:"gold",mythic:"mythic"}[String(type)] || String(type));
 }
 function openChestModal(type){
-    if(typeof playGameCue === "function") playGameCue("chest-open");
     const rawType=String(type||"");
     const visualType=normalizeChestType(rawType);
     const c=chestInfo[visualType];
@@ -735,6 +736,7 @@ async function confirmOpenChest(){
         showReward(d.rewards||[],type);
         if(typeof playGameCue === "function") playGameCue("reward");
     }catch(e){
+        if(typeof LiraMusic !== "undefined") LiraMusic.endChest();
         btn.disabled=false;
         const visual=document.getElementById("chestOpeningVisual");
         if(visual) visual.innerHTML=chestVisual(normalizeChestType(type));
@@ -1303,71 +1305,113 @@ function escapeHtml(s) {
         .replaceAll("'","&#039;");
 }
 
-// Локальна процедурна музика без зовнішніх файлів: не потребує завантажень і не порушує авторські права.
+// Готові MP3-треки для Ліри. Покласти файли в папку ./music/ поруч із HTML.
 const LiraMusic = (() => {
-  let ctx=null, master=null, enabled=false, scene='loading', loopTimer=null, step=0;
-  const patterns={
-    loading:{tempo:620, notes:[220,277.18,329.63,277.18,196,246.94,293.66,246.94], wave:'sine', gain:.045},
-    menu:{tempo:520, notes:[261.63,329.63,392,329.63,293.66,349.23,440,349.23,246.94,293.66,369.99,293.66], wave:'triangle', gain:.035},
-    arena:{tempo:470, notes:[196,246.94,293.66,246.94,220,261.63,329.63,261.63], wave:'sine', gain:.035},
-    battle:{tempo:330, notes:[146.83,220,174.61,261.63,196,293.66,174.61,261.63], wave:'sawtooth', gain:.028}
+  const tracks = {
+    menu: { name: '☕ Lo-fi Gaming', src: './music/music-menu.mp3' },
+    chest: { name: '🌌 Game Synthwave', src: './music/music-chest.mp3' },
+    battle: { name: '💜 Chillout', src: './music/music-battle.mp3' }
   };
-  function init(){
-    if(ctx) return true;
-    try{ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.48;master.connect(ctx.destination);return true;}catch(e){return false;}
+  let enabled = false;
+  let scene = 'loading';
+  let current = null;
+  let currentKey = '';
+  let pendingAutoplay = false;
+  const audio = {};
+  Object.keys(tracks).forEach(key => {
+    const a = new Audio();
+    a.src = tracks[key].src;
+    a.loop = true;
+    a.preload = 'auto';
+    a.volume = key === 'chest' ? 0.42 : 0.34;
+    audio[key] = a;
+    a.addEventListener('error', () => {
+      // Не показуємо помилку гравцю, якщо MP3 ще не завантажено на сервер.
+      console.warn('Не знайдено MP3-трек:', tracks[key].src);
+    });
+  });
+  function trackForScene() {
+    if (scene === 'battle') return 'battle';
+    if (scene === 'chest') return 'chest';
+    return 'menu'; // loading, home, cards, inventory, arena lobby, shop, profile
   }
-  function tone(freq,duration,opts={}){
-    if(!enabled||!init())return;
-    const now=ctx.currentTime, osc=ctx.createOscillator(), gain=ctx.createGain();
-    osc.type=opts.wave||'sine';osc.frequency.setValueAtTime(freq,now);
-    if(opts.slide)osc.frequency.exponentialRampToValueAtTime(Math.max(35,freq*opts.slide),now+duration);
-    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,opts.volume||.025),now+.035);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
-    osc.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+duration+.04);
+  function syncButtons() {
+    const btn = document.getElementById('musicToggle');
+    const profileBtn = document.getElementById('profileMusicToggle');
+    if (btn) {
+      btn.classList.toggle('on', enabled);
+      btn.textContent = enabled ? '♫ Музика: ON' : '♫ Музика: OFF';
+      btn.title = enabled ? 'Вимкнути музику' : 'Увімкнути музику';
+    }
+    if (profileBtn) profileBtn.textContent = enabled ? '🔊 Вимкнути музику' : '🔇 Увімкнути музику';
   }
-  function tick(){
-    if(!enabled)return;
-    const p=patterns[scene]||patterns.menu, n=p.notes[step%p.notes.length];
-    tone(n,.42,{wave:p.wave,volume:p.gain});
-    if(step%4===0) tone(n/2,.62,{wave:'sine',volume:p.gain*.42});
-    if(scene==='battle'&&step%2===1) tone(n*1.5,.16,{wave:'triangle',volume:.012});
-    step++;loopTimer=setTimeout(tick,p.tempo);
+  function stopAll(exceptKey='') {
+    Object.keys(audio).forEach(key => {
+      const a = audio[key];
+      if (key !== exceptKey) { a.pause(); try { a.currentTime = 0; } catch (_) {} }
+    });
   }
-  function setScene(next){
-    if(!patterns[next] && next!=='loading')next='menu';
-    if(scene===next&&loopTimer)return;
-    scene=next;step=0;
-    if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}
-    if(enabled)tick();
+  async function playCurrent(forceRestart=false) {
+    if (!enabled) { stopAll(); currentKey = ''; current = null; return; }
+    const key = trackForScene();
+    const a = audio[key];
+    if (!a) return;
+    if (currentKey !== key || forceRestart) {
+      stopAll(key);
+      if (forceRestart || currentKey !== key) { try { a.currentTime = 0; } catch (_) {} }
+      currentKey = key; current = a;
+    }
+    try { await a.play(); pendingAutoplay = false; }
+    catch (e) {
+      // Браузер Telegram може забороняти autoplay до першого натискання користувача.
+      pendingAutoplay = true;
+    }
   }
-  function toggle(force){
-    const next=typeof force==='boolean'?force:!enabled;
-    enabled=next;
-    const btn=document.getElementById('musicToggle');
-    if(enabled){if(!init()){enabled=false;return false;}ctx.resume?.();if(btn){btn.classList.add('on');btn.textContent='♫ Музика: ON';btn.title='Вимкнути музику';}if(loopTimer)clearTimeout(loopTimer);loopTimer=null;tick();}
-    else{if(loopTimer)clearTimeout(loopTimer);loopTimer=null;if(master&&ctx)master.gain.setTargetAtTime(.0001,ctx.currentTime,.04);if(btn){btn.classList.remove('on');btn.textContent='♫ Музика: OFF';btn.title='Увімкнути музику';}return true;}
-    if(master&&ctx)master.gain.setTargetAtTime(.48,ctx.currentTime,.08);
+  function toggle(force) {
+    enabled = typeof force === 'boolean' ? force : !enabled;
+    try { localStorage.setItem('liraMusicEnabled', enabled ? '1' : '0'); } catch (_) {}
+    syncButtons();
+    if (enabled) playCurrent(true); else { stopAll(); current = null; currentKey = ''; }
     return true;
   }
-  function cue(kind){
-    if(!enabled||!init())return;
-    if(kind==='attack'){tone(130,.13,{wave:'sawtooth',volume:.055,slide:.45});tone(392,.16,{wave:'triangle',volume:.028,slide:.65});}
-    else if(kind==='chest-open'){tone(260,.18,{volume:.035});setTimeout(()=>tone(390,.2,{volume:.04}),120);setTimeout(()=>tone(520,.35,{volume:.05}),250);}
-    else if(kind==='reward'){[523.25,659.25,783.99,1046.5].forEach((n,i)=>setTimeout(()=>tone(n,.5,{wave:'triangle',volume:.045}),i*105));}
+  function setScene(next) {
+    scene = ['loading','menu','arena','battle','chest'].includes(next) ? next : 'menu';
+    if (enabled) playCurrent(false);
   }
-  return {toggle,setScene,cue,get enabled(){return enabled;}};
+  function cue(kind) {
+    if (kind === 'chest-open') { scene = 'chest'; if (enabled) playCurrent(true); }
+    // Трек скрині продовжується і під час показу виграних карток/нагород.
+    if (kind === 'reward') { scene = 'chest'; if (enabled) playCurrent(false); }
+  }
+  function endChest() {
+    if (scene === 'chest') {
+      scene = document.getElementById('battle') && !document.getElementById('battle').classList.contains('hidden') ? 'battle' : 'menu';
+      if (enabled) playCurrent(true);
+    }
+  }
+  function init() {
+    let saved = null;
+    try { saved = localStorage.getItem('liraMusicEnabled'); } catch (_) {}
+    // За замовчуванням музика ввімкнена; якщо браузер блокує автозапуск,
+    // вона стартує після першого дотику/натискання користувача.
+    enabled = saved === null ? true : saved === '1';
+    syncButtons();
+    if (enabled) playCurrent(true);
+    const unlock = () => { if (enabled && pendingAutoplay) playCurrent(true); };
+    document.addEventListener('pointerdown', unlock, {passive:true});
+    document.addEventListener('keydown', unlock);
+  }
+  return { toggle, setScene, cue, endChest, init, get enabled(){return enabled;} };
 })();
 function setMusicScene(scene){LiraMusic.setScene(scene);}
 function playGameCue(kind){LiraMusic.cue(kind);}
+function chooseMusicStyle(){ /* У цій конфігурації треки призначені окремим ігровим сценам. */ }
+function toggleProfileMusic(){LiraMusic.toggle();}
 (function setupMusic(){
-  const btn=document.getElementById('musicToggle');
-  if(btn)btn.addEventListener('click',()=>LiraMusic.toggle());
-  // Автозапуск браузери часто блокують до першого дотику; запускаємо з першої взаємодії.
-  const unlock=(event)=>{if(event?.target?.closest?.('#musicToggle'))return;if(!LiraMusic.enabled)LiraMusic.toggle(true);document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);};
-  document.addEventListener('pointerdown',unlock,{passive:true});
-  document.addEventListener('keydown',unlock);
+  const btn=document.getElementById('musicToggle');if(btn)btn.addEventListener('click',()=>LiraMusic.toggle());
+  LiraMusic.init();
   setMusicScene('loading');
 })();
-
 async function boot() {
     if (!tg || !tg.initData) {
         setStatus(
