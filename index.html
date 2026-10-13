@@ -181,11 +181,32 @@ button:disabled{opacity:.4}
 .market-price-box{margin-top:10px;padding:10px;border-radius:14px;background:rgba(255,255,255,.05);text-align:left}.market-price-box input{width:100%;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:#fff;font-size:15px;font-weight:900}.card-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.card-action-grid button{margin:0}.locked-preview{filter:grayscale(1) blur(3px);opacity:.35}
 /* LIRA CINEMATIC LOADING */
 .lira-intro{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at center,#171126 0%,#090711 48%,#030308 100%);transition:opacity .65s ease,visibility .65s ease}.lira-intro.done{opacity:0;visibility:hidden;pointer-events:none}.intro-glow{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(183,91,255,.28),rgba(139,67,255,.08) 38%,transparent 70%);animation:introPulse 1.15s ease-in-out infinite alternate}.sword{position:absolute;width:210px;height:15px;border-radius:12px;z-index:3;background:linear-gradient(90deg,#8e8e98,#fff 45%,#c8c8d2 65%,#666);box-shadow:0 0 10px rgba(255,255,255,.55),0 0 25px rgba(168,98,255,.35);opacity:0;filter:drop-shadow(0 0 5px rgba(255,255,255,.45))}.sword:before{content:"";position:absolute;right:-3px;top:-7px;border-left:30px solid #e8e8ef;border-top:14px solid transparent;border-bottom:14px solid transparent}.sword:after{content:"";position:absolute;left:-19px;top:2px;width:22px;height:11px;border-radius:4px;background:#8c5a32;box-shadow:-7px 0 0 #c18a4c}.sword-left{left:calc(50% - 360px);transform:rotate(32deg);animation:swordLeft 2.05s cubic-bezier(.2,.8,.2,1) forwards}.sword-right{right:calc(50% - 360px);transform:rotate(-32deg) scaleX(-1);animation:swordRight 2.05s cubic-bezier(.2,.8,.2,1) forwards}.sword-clash{position:absolute;z-index:4;font-size:48px;color:#fff;opacity:0;text-shadow:0 0 8px #fff,0 0 25px #c77cff,0 0 45px #8b43ff;animation:clashFlash 2.05s ease forwards}.intro-title{position:absolute;z-index:5;top:54%;font-size:42px;font-weight:1000;letter-spacing:10px;color:#fff;opacity:0;text-shadow:0 0 12px #fff,0 0 32px #a855f7,0 0 60px #8b43ff;animation:introTitle 2.7s ease forwards}.intro-subtitle{position:absolute;z-index:5;top:62%;font-size:11px;letter-spacing:5px;color:rgba(255,255,255,.62);opacity:0;animation:introSub 2.7s ease forwards}.intro-sparks{position:absolute;inset:0;z-index:2}.intro-sparks i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px #d9b5ff;animation:sparkFly .9s ease-out forwards}@keyframes swordLeft{0%{opacity:0;transform:translate(-260px,-120px) rotate(32deg)}28%{opacity:1}45%{transform:translate(130px,55px) rotate(32deg)}51%{transform:translate(80px,35px) rotate(24deg)}57%{transform:translate(145px,62px) rotate(32deg)}68%{transform:translate(110px,45px) rotate(32deg)}100%{opacity:1;transform:translate(92px,40px) rotate(45deg)}}@keyframes swordRight{0%{opacity:0;transform:translate(260px,-120px) rotate(-32deg) scaleX(-1)}28%{opacity:1}45%{transform:translate(-130px,55px) rotate(-32deg) scaleX(-1)}51%{transform:translate(-80px,35px) rotate(-24deg) scaleX(-1)}57%{transform:translate(-145px,62px) rotate(-32deg) scaleX(-1)}68%{transform:translate(-110px,45px) rotate(-32deg) scaleX(-1)}100%{opacity:1;transform:translate(-92px,40px) rotate(-45deg) scaleX(-1)}}@keyframes clashFlash{0%,38%{opacity:0;transform:scale(.2)}44%{opacity:1;transform:scale(1.5)}49%{opacity:0;transform:scale(2.3)}65%{opacity:0}100%{opacity:1;transform:scale(.8)}}@keyframes introTitle{0%,58%{opacity:0;transform:translateY(18px) scale(.85)}74%{opacity:1;transform:translateY(0) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes introSub{0%,68%{opacity:0;transform:translateY(8px)}82%,100%{opacity:1;transform:translateY(0)}}@keyframes introPulse{from{transform:scale(.85);opacity:.55}to{transform:scale(1.15);opacity:1}}@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--sx),var(--sy)) scale(0);opacity:0}}@media (prefers-reduced-motion:reduce){.lira-intro{display:none}}
+
+/* Performance, chest artwork and arena isolation fixes */
+#attackFx{pointer-events:none}
+.inv-slot .chest-slot-icon{width:100%;display:flex;align-items:center;justify-content:center;min-width:0}
+.inv-slot .chest-slot-icon .chest-visual{height:42px;width:100%;min-width:0;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+.inv-slot .chest-slot-icon .lira-chest-art{width:58px;height:44px;max-width:100%;object-fit:contain}
+#itemModalVisual .chest-visual{height:92px;width:100%;justify-content:center}
+#itemModalVisual .lira-chest-art{width:145px;height:105px}
+#chestOpeningVisual .chest-visual{height:120px;width:100%;justify-content:center}
+#chestOpeningVisual .lira-chest-art{width:150px;height:120px}
+#chestOpeningVisual .chest-visual.opening .lira-chest-art{animation:liraChestOpenPulse 1.1s ease-in-out infinite}
+#chestModal .modal-card{overflow:hidden}
+#chestOpenButton:disabled{opacity:.78;cursor:wait}
+@keyframes liraChestOpenPulse{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 5px rgba(180,130,255,.3))}50%{transform:translateY(-5px) scale(1.04);filter:drop-shadow(0 0 15px rgba(180,130,255,.9))}}
+@media(prefers-reduced-motion:reduce){.lira-chest-art,.fighter.hit,.attack-line.show{animation:none!important;transition:none!important}}
+
+
+.music-toggle{position:fixed;right:12px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:9999;width:auto;max-width:155px;margin:0;padding:9px 12px;border-radius:999px;background:rgba(25,18,42,.92);border:1px solid rgba(204,155,255,.35);box-shadow:0 6px 22px rgba(0,0,0,.35);font-size:12px;backdrop-filter:blur(10px)}
+.music-toggle.on{background:linear-gradient(135deg,#5d2da0,#913fd0)}
+@media(min-width:700px){.music-toggle{right:calc((100vw - 560px)/2 + 8px)}}
 </style>
 </head>
 
 <body>
 <div id="liraIntro" class="lira-intro" aria-hidden="true"><div class="intro-glow"></div><div class="intro-sparks" id="introSparks"></div><div class="sword sword-left"><span></span></div><div class="sword sword-right"><span></span></div><div class="sword-clash">✦</div><div class="intro-title">ЛІРА</div><div class="intro-subtitle">КАРТКОВА АРЕНА</div></div>
+<button id="musicToggle" class="music-toggle" type="button" aria-label="Увімкнути музику" title="Музика: вимкнена">♫ Музика: OFF</button>
 <div class="app">
 
 <div class="top">
@@ -433,7 +454,8 @@ function headers() {
 
 async function api(path, options={}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), Number(options.timeout || 15000));
+    const timeoutMs = Number(options.timeout || 30000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const requestOptions = {...options};
     delete requestOptions.timeout;
     requestOptions.signal = controller.signal;
@@ -460,7 +482,7 @@ async function api(path, options={}) {
         }
         return data;
     } catch (e) {
-        if (e.name === "AbortError") throw new Error("API не відповів протягом 15 секунд");
+        if (e.name === "AbortError") throw new Error(`API не відповів протягом ${Math.round(timeoutMs/1000)} секунд. Перевір швидкодію серверного API.`);
         if (e instanceof TypeError) {
             throw new Error("❌ API Ліри недоступне. Перевір HTTPS/API на VPS.");
         }
@@ -647,18 +669,16 @@ let autoTimer = null;
 let speed = 1;
 let queueTimer = null;
 let auto = false;
+let attackInFlight = false;
+let chestOpenInFlight = false;
 
 function showPage(pageName){
+  if(typeof setMusicScene === "function") setMusicScene(pageName === "arena" && !document.getElementById("battle")?.classList.contains("hidden") ? "battle" : pageName === "arena" ? "arena" : "menu");
   if(pageName!=="arena" && auto) stopAuto();
   ["home","collection","arena","inventory","shop","profile"].forEach(x=>{
     const p=document.getElementById(x+"Page");
     if(p)p.classList.toggle("active",x===pageName);
   });
-  if(pageName==="collection")loadCollection();
-  if(pageName==="inventory")loadInventory();
-  if(pageName==="shop")loadShop();
-  if(pageName==="profile")loadProfile();
-  if(pageName==="arena")loadCards();
   const battle=document.getElementById("battle");
   if(battle && pageName!=="arena")battle.classList.add("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
@@ -680,6 +700,7 @@ function normalizeChestType(type){
     return ({common:"wood",epic:"iron",legendary:"gold",mythic:"mythic"}[String(type)] || String(type));
 }
 function openChestModal(type){
+    if(typeof playGameCue === "function") playGameCue("chest-open");
     const rawType=String(type||"");
     const visualType=normalizeChestType(rawType);
     const c=chestInfo[visualType];
@@ -693,15 +714,17 @@ function openChestModal(type){
 }
 
 async function confirmOpenChest(){
-    if(!selectedChestType) return;
+    if(chestOpenInFlight || !selectedChestType) return;
     const type=selectedChestType, btn=document.getElementById("chestOpenButton");
     if(btn.disabled) return;
+    chestOpenInFlight=true;
     btn.disabled=true;
     document.getElementById("chestOpeningVisual").innerHTML=chestVisual(normalizeChestType(type),true);
+    if(typeof playGameCue === "function") playGameCue("chest-open");
     document.getElementById("chestModalText").textContent="✨ Скриня відкривається...";
     try{
         await new Promise(r=>setTimeout(r,650));
-        const d=await api("/api/inventory/chest/open",{method:"POST",body:JSON.stringify({chest_type:type})});
+        const d=await api("/api/inventory/chest/open",{method:"POST",timeout:45000,body:JSON.stringify({chest_type:type})});
         closeModal("chestModal"); selectedChestType=null;
         await Promise.allSettled([loadMe(),loadCards()]);
         await loadHome();
@@ -710,10 +733,15 @@ async function confirmOpenChest(){
         else await loadInventory();
         await Promise.allSettled([loadProfile(),loadShop()]);
         showReward(d.rewards||[],type);
+        if(typeof playGameCue === "function") playGameCue("reward");
     }catch(e){
         btn.disabled=false;
-        document.getElementById("chestModalText").textContent="❌ "+e.message;
+        const visual=document.getElementById("chestOpeningVisual");
+        if(visual) visual.innerHTML=chestVisual(normalizeChestType(type));
+        document.getElementById("chestModalText").textContent="❌ "+e.message+" Якщо сервер не підтвердив результат, перевір інвентар перед повторною спробою.";
         setStatus("❌ Не вдалося відкрити скриню: "+e.message);
+    }finally{
+        chestOpenInFlight=false;
     }
 }
 function showReward(rewards,type){
@@ -818,9 +846,9 @@ function renderInventorySlots(){
     for(let i=0;i<slots.max;i++){
       const it=items[i];
       if(!it){html+=`<div class="inv-slot empty"><span class="slot-num">${i+1}</span>＋</div>`;continue}
-      const icon=it.kind==='chest'?chestEmoji(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
+      const icon=it.kind==='chest'?chestVisual(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
       const normalized=normalizeChestType(it.chest_type); const name=it.kind==='chest'?(it.title||rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[normalized])||normalized)) : `+${it.value} ${upgradeLabel(it.upgrade_type)}`;
-      html+=`<div class="inv-slot" onclick="openInventoryItem(${i})"><span class="slot-num">${i+1}</span><div><div class="slot-icon">${icon}</div><div class="slot-name">${escapeHtml(name)}</div></div></div>`;
+      html+=`<div class="inv-slot" onclick="openInventoryItem(${i})"><span class="slot-num">${i+1}</span><div><div class="slot-icon ${it.kind==='chest'?'chest-slot-icon':''}">${icon}</div><div class="slot-name">${escapeHtml(name)}</div></div></div>`;
     }
     box.innerHTML=html;
 }
@@ -831,7 +859,7 @@ function openInventoryItem(index){
   const it=(inventoryData?.items||[])[index]; if(!it)return;
   const title=it.kind==='chest'?(it.title||'🎁 Скриня'):`🛠️ Покращення +${it.value}`;
   document.getElementById('itemModalTitle').textContent=title;
-  document.getElementById('itemModalVisual').textContent=it.kind==='chest'?chestEmoji(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
+  document.getElementById('itemModalVisual').innerHTML=it.kind==='chest'?chestVisual(normalizeChestType(it.chest_type)):upgradeEmoji(it.upgrade_type);
   document.getElementById('itemModalText').textContent=it.kind==='chest'?`Скриня відкриває нагороду відповідного типу (${rarityLabel(({wood:'common',iron:'epic',gold:'legendary',mythic:'mythic'}[normalizeChestType(it.chest_type)])||normalizeChestType(it.chest_type))}). Після успішного відкриття вона має зникнути зі слота.`:`Це покращення додає +${it.value} до характеристики «${upgradeLabel(it.upgrade_type)}».${it.upgrade_type==='all'?`
 ✨ Додатково: Сила +${it.value}, Захист +${it.value}, HP +${it.value}, Маг. захист +${it.value}, Швидкість +${it.value}, Крит +${(Number(it.value)/10).toFixed(1)}%.`:''} Обери картку відповідної рідкості, щоб застосувати його.`;
   const a=document.getElementById('itemModalAction');
@@ -943,6 +971,9 @@ async function autoLoop(){
 }
 
 function playAttackFx(){
+    if(typeof playGameCue === "function") playGameCue("attack");
+    const arena=document.getElementById("arenaPage");
+    if(!arena || !arena.classList.contains("active")) return;
     const fx=document.getElementById("attackFx");
     if(fx){fx.classList.remove("show");void fx.offsetWidth;fx.style.left=(Math.random()*25+37)+"%";fx.style.top=(Math.random()*25+35)+"%";fx.style.setProperty("--a",(Math.random()*35-17)+"deg");fx.classList.add("show");}
     const target=document.getElementById(currentMatch?.turn==='player'?'enemyImg':'playerImg');
@@ -1051,26 +1082,20 @@ function navigate(where){
 function setBottomNav(active){document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===active))}
 
 async function refreshAll() {
-    setStatus("Оновлення…");
-    const jobs = await Promise.allSettled([
-        checkApiHealth(),
-        loadMe(),
-        loadCards(),
-        loadHistory(),
-        loadCollection(),
-        loadInventory(),
-        loadShop(),
-        loadProfile(),
-        loadFlyerMini()
-    ]);
-    // The homepage has extra fields from /api/profile; load it after /api/me
-    // so the full name/profile values are not overwritten by the shorter /api/me response.
-    await loadHome();
-    await restoreActiveMatch(false);
     const activePage = document.querySelector(".page.active")?.id?.replace("Page", "") || "home";
+    setStatus("Оновлюємо дані сторінки…");
+    const jobs = [checkApiHealth()];
+    if (activePage === "arena") jobs.push(loadMe(), loadCards(), loadHistory());
+    else if (activePage === "inventory") jobs.push(loadInventory());
+    else if (activePage === "collection") jobs.push(loadCollection());
+    else if (activePage === "shop") jobs.push(loadShop());
+    else if (activePage === "profile") jobs.push(loadProfile());
+    else jobs.push(loadHome(), loadFlyerMini());
+    const results = await Promise.allSettled(jobs);
+    if (activePage === "arena") await restoreActiveMatch(false);
     setBottomNav(activePage);
-    const failed = jobs.filter(x => x.status === "rejected");
-    setStatus(failed.length ? "⚠️ Частина даних не завантажилась. Перевір підключення до API та натисни «Оновити»." : "");
+    const failed = results.filter(x => x.status === "rejected");
+    setStatus(failed.length ? "⚠️ Частина даних не завантажилась. Перевір API та спробуй ще раз." : "✅ Дані оновлено.");
 }
 async function startBattle() {
     const resumed = await restoreActiveMatch(false);
@@ -1086,6 +1111,7 @@ async function startBattle() {
 }
 
 function openBattle(match) {
+    if(typeof setMusicScene === "function") setMusicScene("battle");
     currentMatch = match;
     document.getElementById("lobby").classList.add("hidden");
     document.getElementById("battle").classList.remove("hidden");
@@ -1191,9 +1217,10 @@ function renderLog(log) {
 }
 
 async function attack() {
-    if (!currentMatch) return;
-
-    document.getElementById("attackBtn").disabled = true;
+    if (!currentMatch || currentMatch.finished || currentMatch.turn !== "player" || attackInFlight) return;
+    attackInFlight = true;
+    const attackButton = document.getElementById("attackBtn");
+    if (attackButton) { attackButton.disabled = true; attackButton.textContent = "⏳ Виконується хід…"; }
     playAttackFx();
 
     try {
@@ -1203,22 +1230,26 @@ async function attack() {
             "/attack",
             {
                 method: "POST",
+                timeout: 45000,
                 body: "{}"
             }
         );
 
         renderMatch(data.match);
-        await loadMe();
-
         if (data.match.finished) {
-            await loadCards();
-            await loadHistory();
+            stopAuto();
+            await Promise.allSettled([loadMe(), loadCards(), loadHistory()]);
         }
 
     } catch(e) {
         setStatus("❌ " + e.message);
-        if (currentMatch) {
-            renderMatch(currentMatch);
+        if (currentMatch) renderMatch(currentMatch);
+    } finally {
+        attackInFlight = false;
+        const btn = document.getElementById("attackBtn");
+        if (btn) {
+            btn.textContent = "⚔️ Атакувати";
+            btn.disabled = !currentMatch || !!currentMatch.finished || currentMatch.turn !== "player";
         }
     }
 }
@@ -1250,6 +1281,7 @@ async function surrender() {
 }
 
 function backLobby() {
+    if(typeof setMusicScene === "function") setMusicScene("arena");
     stopAuto();
     document.getElementById("battle").classList.add("hidden");
     document.getElementById("lobby").classList.remove("hidden");
@@ -1271,6 +1303,71 @@ function escapeHtml(s) {
         .replaceAll("'","&#039;");
 }
 
+// Локальна процедурна музика без зовнішніх файлів: не потребує завантажень і не порушує авторські права.
+const LiraMusic = (() => {
+  let ctx=null, master=null, enabled=false, scene='loading', loopTimer=null, step=0;
+  const patterns={
+    loading:{tempo:620, notes:[220,277.18,329.63,277.18,196,246.94,293.66,246.94], wave:'sine', gain:.045},
+    menu:{tempo:520, notes:[261.63,329.63,392,329.63,293.66,349.23,440,349.23,246.94,293.66,369.99,293.66], wave:'triangle', gain:.035},
+    arena:{tempo:470, notes:[196,246.94,293.66,246.94,220,261.63,329.63,261.63], wave:'sine', gain:.035},
+    battle:{tempo:330, notes:[146.83,220,174.61,261.63,196,293.66,174.61,261.63], wave:'sawtooth', gain:.028}
+  };
+  function init(){
+    if(ctx) return true;
+    try{ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.48;master.connect(ctx.destination);return true;}catch(e){return false;}
+  }
+  function tone(freq,duration,opts={}){
+    if(!enabled||!init())return;
+    const now=ctx.currentTime, osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.type=opts.wave||'sine';osc.frequency.setValueAtTime(freq,now);
+    if(opts.slide)osc.frequency.exponentialRampToValueAtTime(Math.max(35,freq*opts.slide),now+duration);
+    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,opts.volume||.025),now+.035);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+    osc.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+duration+.04);
+  }
+  function tick(){
+    if(!enabled)return;
+    const p=patterns[scene]||patterns.menu, n=p.notes[step%p.notes.length];
+    tone(n,.42,{wave:p.wave,volume:p.gain});
+    if(step%4===0) tone(n/2,.62,{wave:'sine',volume:p.gain*.42});
+    if(scene==='battle'&&step%2===1) tone(n*1.5,.16,{wave:'triangle',volume:.012});
+    step++;loopTimer=setTimeout(tick,p.tempo);
+  }
+  function setScene(next){
+    if(!patterns[next] && next!=='loading')next='menu';
+    if(scene===next&&loopTimer)return;
+    scene=next;step=0;
+    if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}
+    if(enabled)tick();
+  }
+  function toggle(force){
+    const next=typeof force==='boolean'?force:!enabled;
+    enabled=next;
+    const btn=document.getElementById('musicToggle');
+    if(enabled){if(!init()){enabled=false;return false;}ctx.resume?.();if(btn){btn.classList.add('on');btn.textContent='♫ Музика: ON';btn.title='Вимкнути музику';}if(loopTimer)clearTimeout(loopTimer);loopTimer=null;tick();}
+    else{if(loopTimer)clearTimeout(loopTimer);loopTimer=null;if(master&&ctx)master.gain.setTargetAtTime(.0001,ctx.currentTime,.04);if(btn){btn.classList.remove('on');btn.textContent='♫ Музика: OFF';btn.title='Увімкнути музику';}return true;}
+    if(master&&ctx)master.gain.setTargetAtTime(.48,ctx.currentTime,.08);
+    return true;
+  }
+  function cue(kind){
+    if(!enabled||!init())return;
+    if(kind==='attack'){tone(130,.13,{wave:'sawtooth',volume:.055,slide:.45});tone(392,.16,{wave:'triangle',volume:.028,slide:.65});}
+    else if(kind==='chest-open'){tone(260,.18,{volume:.035});setTimeout(()=>tone(390,.2,{volume:.04}),120);setTimeout(()=>tone(520,.35,{volume:.05}),250);}
+    else if(kind==='reward'){[523.25,659.25,783.99,1046.5].forEach((n,i)=>setTimeout(()=>tone(n,.5,{wave:'triangle',volume:.045}),i*105));}
+  }
+  return {toggle,setScene,cue,get enabled(){return enabled;}};
+})();
+function setMusicScene(scene){LiraMusic.setScene(scene);}
+function playGameCue(kind){LiraMusic.cue(kind);}
+(function setupMusic(){
+  const btn=document.getElementById('musicToggle');
+  if(btn)btn.addEventListener('click',()=>LiraMusic.toggle());
+  // Автозапуск браузери часто блокують до першого дотику; запускаємо з першої взаємодії.
+  const unlock=(event)=>{if(event?.target?.closest?.('#musicToggle'))return;if(!LiraMusic.enabled)LiraMusic.toggle(true);document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);};
+  document.addEventListener('pointerdown',unlock,{passive:true});
+  document.addEventListener('keydown',unlock);
+  setMusicScene('loading');
+})();
+
 async function boot() {
     if (!tg || !tg.initData) {
         setStatus(
@@ -1288,6 +1385,7 @@ async function boot() {
         });
 
         await refreshAll();
+        if(typeof setMusicScene === "function") setMusicScene("menu");
 
     } catch(e) {
         setStatus("❌ " + e.message + " | API: " + API_BASE);
